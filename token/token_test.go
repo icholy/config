@@ -12,7 +12,18 @@ func TestLexer(t *testing.T) {
 		name   string
 		input  string
 		expect []Token
-	}{}
+	}{
+		{
+			name:  "eof",
+			input: "",
+			expect: []Token{
+				{
+					Pos:  Pos{1, 0},
+					Type: EOF,
+				},
+			},
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var actual []Token
@@ -20,7 +31,7 @@ func TestLexer(t *testing.T) {
 			for {
 				tok := lex.Next()
 				actual = append(actual, tok)
-				if tok.Type == EOF {
+				if tok.Type == EOF || tok.Type == INVALID {
 					break
 				}
 			}
