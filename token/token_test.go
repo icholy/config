@@ -16,25 +16,23 @@ func TestLexer(t *testing.T) {
 			name:  "eof",
 			input: "",
 			expect: []Token{
-				{
-					Pos:  Pos{1, 0},
-					Type: EOF,
-				},
+				{Pos{1, 0}, EOF, ""},
 			},
 		},
 		{
 			name:  "int",
 			input: "42",
 			expect: []Token{
-				{
-					Pos:  Pos{1, 0},
-					Type: NUMBER,
-					Text: "42",
-				},
-				{
-					Pos:  Pos{1, 2},
-					Type: EOF,
-				},
+				{Pos{1, 0}, NUMBER, "42"},
+				{Pos{1, 2}, EOF, ""},
+			},
+		},
+		{
+			name:  "int",
+			input: "-42",
+			expect: []Token{
+				{Pos{1, 0}, NUMBER, "-42"},
+				{Pos{1, 3}, EOF, ""},
 			},
 		},
 	}
