@@ -37,6 +37,14 @@ func TestLexer(t *testing.T) {
 			},
 		},
 		{
+			name:  "Float",
+			input: "3.14159265359",
+			expect: []Token{
+				{Pos{1, 1, 0}, NUMBER, "3.14159265359"},
+				{Pos{1, 14, 13}, EOF, ""},
+			},
+		},
+		{
 			name:  "String",
 			input: `"hello world"`,
 			expect: []Token{
