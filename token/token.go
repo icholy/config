@@ -173,7 +173,6 @@ func (l *Lexer) read() rune {
 		return eof
 	}
 	ch := l.data[l.index]
-
 	if isNewline(ch) {
 		// handle CRLF
 		if !(l.index > 0 && ch == '\n' && l.data[l.index-1] == '\r') {
