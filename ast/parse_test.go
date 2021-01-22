@@ -22,7 +22,7 @@ func TestParse(t *testing.T) {
 				Entries: []*Entry{
 					{
 						Start: token.Pos{1, 1, 0},
-						Name: Ident{
+						Name: &Ident{
 							Start: token.Pos{1, 1, 0},
 							Value: "foo",
 						},

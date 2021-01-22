@@ -46,6 +46,6 @@ func (String) value() {}
 // Entry is a key/value pair
 type Entry struct {
 	Start token.Pos
-	Name  Ident
+	Name  *Ident
 	Value Value
 }
