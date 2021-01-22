@@ -66,24 +66,24 @@ type Pos struct {
 
 // Token contains a token's type and text
 type Token struct {
-	Pos  Pos
-	Type Type
-	Text string
+	Start Pos
+	Type  Type
+	Text  string
 }
 
 // Lexer tokenizes a reader
 type Lexer struct {
-	data  []rune
-	index int
-	pos   Pos
+	data    []rune
+	index   int
+	current Pos
 }
 
 // NewLexer constructs a Lexer instance
 func NewLexer(input string) *Lexer {
 	return &Lexer{
 		// TODO: make sure this is correct
-		data: []rune(input),
-		pos:  Pos{Line: 1},
+		data:    []rune(input),
+		current: Pos{Line: 1},
 	}
 }
 
@@ -91,23 +91,23 @@ func NewLexer(input string) *Lexer {
 func (l *Lexer) Next() Token {
 	if pos, ok := l.whitespace(); ok {
 		return Token{
-			Pos:  pos,
-			Type: NEWLINE,
+			Start: pos,
+			Type:  NEWLINE,
 		}
 	}
 	ch := l.peek()
-	pos := l.pos
+	pos := l.current
 	switch {
 	case ch == eof:
 		return Token{
-			Pos:  pos,
-			Type: EOF,
+			Start: pos,
+			Type:  EOF,
 		}
 	case isDigit(ch) || ch == '-':
 		return Token{
-			Pos:  pos,
-			Type: NUMBER,
-			Text: l.number(),
+			Start: pos,
+			Type:  NUMBER,
+			Text:  l.number(),
 		}
 	case ch == '"':
 		text, ok := l.str()
@@ -115,16 +115,16 @@ func (l *Lexer) Next() Token {
 			return l.invalid(pos, text)
 		}
 		return Token{
-			Pos:  pos,
-			Type: STRING,
-			Text: text,
+			Start: pos,
+			Type:  STRING,
+			Text:  text,
 		}
 	case isAlpha(ch):
 		text := l.ident()
 		return Token{
-			Pos:  pos,
-			Type: IDENT,
-			Text: text,
+			Start: pos,
+			Type:  IDENT,
+			Text:  text,
 		}
 	case ch == '/':
 		text, ok := l.comment()
@@ -132,9 +132,9 @@ func (l *Lexer) Next() Token {
 			return l.invalid(pos, text)
 		}
 		return Token{
-			Pos:  pos,
-			Type: COMMENT,
-			Text: text,
+			Start: pos,
+			Type:  COMMENT,
+			Text:  text,
 		}
 	case ch == '=':
 		return l.chartok(ASSIGN)
@@ -168,7 +168,7 @@ func (l *Lexer) read() rune {
 		return eof
 	}
 	l.index++
-	l.pos.Column++
+	l.current.Column++
 	return l.data[l.index-1]
 }
 
@@ -202,7 +202,7 @@ func (l *Lexer) whitespace() (Pos, bool) {
 		}
 		if !newline && isNewline(ch) {
 			newline = true
-			pos = l.pos
+			pos = l.current
 		}
 		l.read()
 	}
@@ -211,20 +211,20 @@ func (l *Lexer) whitespace() (Pos, bool) {
 
 // chartok is a helper which returns a single character token
 func (l *Lexer) chartok(typ Type) Token {
-	pos := l.pos
+	pos := l.current
 	return Token{
-		Pos:  pos,
-		Type: typ,
-		Text: string([]rune{l.read()}),
+		Start: pos,
+		Type:  typ,
+		Text:  string([]rune{l.read()}),
 	}
 }
 
 // invalid is a helper which returns an invalid token
 func (l *Lexer) invalid(pos Pos, text string) Token {
 	return Token{
-		Pos:  pos,
-		Type: INVALID,
-		Text: text,
+		Start: pos,
+		Type:  INVALID,
+		Text:  text,
 	}
 }
 
