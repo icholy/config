@@ -245,7 +245,7 @@ func (l *Lexer) number() string {
 	if l.peek() == '-' || l.peek() == '+' {
 		text.WriteRune(l.read())
 	}
-	for isDigit(l.peek()) {
+	for isDigit(l.peek()) || l.peek() == '.' {
 		text.WriteRune(l.read())
 	}
 	return text.String()
