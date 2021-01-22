@@ -108,10 +108,18 @@ func (l *Lexer) Next() Token {
 			Text: l.str(),
 		}
 	case isAlpha(ch):
+		text := l.alphanumeric()
+		if text == "true" || text == "false" {
+			return Token{
+				Pos:  pos,
+				Type: BOOL,
+				Text: text,
+			}
+		}
 		return Token{
 			Pos:  pos,
 			Type: IDENT,
-			Text: l.ident(),
+			Text: text,
 		}
 	case ch == '=':
 		return l.chartok(ASSIGN)
@@ -221,8 +229,8 @@ func (l *Lexer) str() string {
 	return text.String()
 }
 
-// ident reads an identifier
-func (l *Lexer) ident() string {
+// alphanumeric reads an ident or keyword
+func (l *Lexer) alphanumeric() string {
 	var text strings.Builder
 	ch := l.peek()
 	for isAlpha(ch) || isDigit(ch) || ch == '_' {

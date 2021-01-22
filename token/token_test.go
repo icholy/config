@@ -60,6 +60,14 @@ func TestLexer(t *testing.T) {
 				{Pos{1, 3}, EOF, ""},
 			},
 		},
+		{
+			name:  "Bool",
+			input: "true",
+			expect: []Token{
+				{Pos{1, 0}, BOOL, "true"},
+				{Pos{1, 4}, EOF, ""},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
