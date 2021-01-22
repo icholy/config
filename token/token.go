@@ -112,33 +112,37 @@ func (l *Lexer) peek() rune {
 
 // Next returns the next token
 func (l *Lexer) Next() Token {
-	r := l.peek()
+	ch := l.peek()
 	pos := l.pos
 	switch {
-	case r == eof:
+	case ch == eof:
 		return Token{
 			Pos:  pos,
 			Type: EOF,
 			Text: "",
 		}
-	case isDigit(r) || r == '-':
+	case isDigit(ch) || ch == '-':
 		return Token{
 			Type: NUMBER,
 			Pos:  pos,
 			Text: l.number(),
 		}
-	case r == '"':
+	case ch == '"':
 		return Token{
 			Type: STRING,
 			Pos:  pos,
 			Text: l.str(),
 		}
 	default:
-		return Token{
-			Pos:  pos,
-			Type: INVALID,
-			Text: string([]rune{l.read()}),
-		}
+		return l.chartok(l.read(), INVALID)
+	}
+}
+
+func (l *Lexer) chartok(ch rune, typ Type) Token {
+	return Token{
+		Pos:  l.pos,
+		Type: typ,
+		Text: string([]rune{ch}),
 	}
 }
 
@@ -187,6 +191,6 @@ func (l *Lexer) str() string {
 	return b.String()
 }
 
-func isDigit(r rune) bool {
-	return '0' <= r && r <= '9'
+func isDigit(ch rune) bool {
+	return '0' <= ch && ch <= '9'
 }

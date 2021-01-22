@@ -10,6 +10,7 @@ func TestLexer(t *testing.T) {
 	tests := []struct {
 		name   string
 		input  string
+		skip   bool
 		expect []Token
 	}{
 		{
@@ -43,9 +44,21 @@ func TestLexer(t *testing.T) {
 				{Pos{1, 13}, EOF, ""},
 			},
 		},
+		{
+			skip:  true,
+			name:  "Assign",
+			input: "=",
+			expect: []Token{
+				{Pos{1, 0}, ASSIGN, "="},
+				{Pos{1, 2}, EOF, ""},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.skip {
+				t.Skip()
+			}
 			var actual []Token
 			lex := NewLexer(tt.input)
 			for {
