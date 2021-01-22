@@ -87,9 +87,14 @@ func NewLexer(input string) *Lexer {
 // at the end of the input
 const eof = 0x00
 
+// eof returns true when we're at the end of file
+func (l *Lexer) eof() bool {
+	return l.index >= len(l.data)
+}
+
 // read a rune and advance to the next one
 func (l *Lexer) read() rune {
-	if l.index >= len(l.data) {
+	if l.eof() {
 		return eof
 	}
 	l.index++
@@ -99,7 +104,7 @@ func (l *Lexer) read() rune {
 
 // peek reveals the next rune without advancing
 func (l *Lexer) peek() rune {
-	if l.index >= len(l.data) {
+	if l.eof() {
 		return eof
 	}
 	return l.data[l.index]
@@ -122,6 +127,12 @@ func (l *Lexer) Next() Token {
 			Pos:  pos,
 			Text: l.number(),
 		}
+	case r == '"':
+		return Token{
+			Type: STRING,
+			Pos:  pos,
+			Text: l.str(),
+		}
 	default:
 		return Token{
 			Pos:  pos,
@@ -140,6 +151,40 @@ func (l *Lexer) number() string {
 		text.WriteRune(l.read())
 	}
 	return text.String()
+}
+
+func (l *Lexer) str() string {
+	l.read()
+	var escaped bool
+	var b strings.Builder
+	for !l.eof() {
+		ch := l.peek()
+		if escaped {
+			switch ch {
+			case 't':
+				b.WriteByte('\t')
+			case 'r':
+				b.WriteByte('\r')
+			case 'n':
+				b.WriteByte('\n')
+			default:
+				b.WriteRune(ch)
+			}
+			escaped = false
+		} else {
+			if ch == '"' {
+				break
+			}
+			if ch == '\\' {
+				escaped = true
+			} else {
+				b.WriteRune(ch)
+			}
+		}
+		l.read()
+	}
+	l.read()
+	return b.String()
 }
 
 func isDigit(r rune) bool {
