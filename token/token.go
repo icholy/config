@@ -133,16 +133,19 @@ func (l *Lexer) Next() Token {
 			Pos:  pos,
 			Text: l.str(),
 		}
+	case ch == '=':
+		return l.chartok(ASSIGN)
 	default:
-		return l.chartok(l.read(), INVALID)
+		return l.chartok(INVALID)
 	}
 }
 
-func (l *Lexer) chartok(ch rune, typ Type) Token {
+func (l *Lexer) chartok(typ Type) Token {
+	pos := l.pos
 	return Token{
-		Pos:  l.pos,
+		Pos:  pos,
 		Type: typ,
-		Text: string([]rune{ch}),
+		Text: string([]rune{l.read()}),
 	}
 }
 

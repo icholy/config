@@ -45,12 +45,11 @@ func TestLexer(t *testing.T) {
 			},
 		},
 		{
-			skip:  true,
 			name:  "Assign",
 			input: "=",
 			expect: []Token{
 				{Pos{1, 0}, ASSIGN, "="},
-				{Pos{1, 2}, EOF, ""},
+				{Pos{1, 1}, EOF, ""},
 			},
 		},
 	}
