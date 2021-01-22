@@ -135,6 +135,16 @@ func (l *Lexer) Next() Token {
 		}
 	case ch == '=':
 		return l.chartok(ASSIGN)
+	case ch == '{':
+		return l.chartok(LBRACE)
+	case ch == '}':
+		return l.chartok(RBRACE)
+	case ch == '[':
+		return l.chartok(LBRACKET)
+	case ch == ']':
+		return l.chartok(RBRACKET)
+	case ch == ',':
+		return l.chartok(COMMA)
 	default:
 		return l.chartok(INVALID)
 	}
