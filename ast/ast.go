@@ -1,6 +1,6 @@
 package ast
 
-import "go/token"
+import "github.com/icholy/config/token"
 
 // Value ...
 type Value interface{ value() }
