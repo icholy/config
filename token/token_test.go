@@ -97,6 +97,16 @@ func TestLexer(t *testing.T) {
 				{Pos{2, 4}, EOF, ""},
 			},
 		},
+		{
+			name:  "CRLF",
+			input: "foo\r\nbar",
+			expect: []Token{
+				{Pos{1, 1}, IDENT, "foo"},
+				{Pos{1, 4}, NEWLINE, ""},
+				{Pos{2, 1}, IDENT, "bar"},
+				{Pos{2, 4}, EOF, ""},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

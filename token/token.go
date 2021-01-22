@@ -172,14 +172,19 @@ func (l *Lexer) read() rune {
 	if l.eof() {
 		return eof
 	}
-	if l.newline() {
-		l.current.Line++
-		l.current.Column = 1
+	ch := l.data[l.index]
+
+	if isNewline(ch) {
+		// handle CRLF
+		if !(l.index > 0 && ch == '\n' && l.data[l.index-1] == '\r') {
+			l.current.Line++
+			l.current.Column = 1
+		}
 	} else {
 		l.current.Column++
 	}
 	l.index++
-	return l.data[l.index-1]
+	return ch
 }
 
 // peek reveals the next rune without advancing
