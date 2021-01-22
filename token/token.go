@@ -172,8 +172,13 @@ func (l *Lexer) read() rune {
 	if l.eof() {
 		return eof
 	}
+	if l.newline() {
+		l.current.Line++
+		l.current.Column = 1
+	} else {
+		l.current.Column++
+	}
 	l.index++
-	l.current.Column++
 	return l.data[l.index-1]
 }
 

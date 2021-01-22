@@ -87,16 +87,14 @@ func TestLexer(t *testing.T) {
 		},
 		{
 			name:  "Newline",
-			input: "foo = true\nbar=123",
+			input: "foo = true\nbar",
 			expect: []Token{
 				{Pos{1, 1}, IDENT, "foo"},
 				{Pos{1, 5}, ASSIGN, "="},
 				{Pos{1, 7}, IDENT, "true"},
 				{Pos{1, 11}, NEWLINE, ""},
-				{Pos{1, 12}, IDENT, "bar"},
-				{Pos{1, 15}, ASSIGN, "="},
-				{Pos{1, 16}, NUMBER, "123"},
-				{Pos{1, 19}, EOF, ""},
+				{Pos{2, 1}, IDENT, "bar"},
+				{Pos{2, 4}, EOF, ""},
 			},
 		},
 	}
