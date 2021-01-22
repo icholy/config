@@ -52,6 +52,14 @@ func TestLexer(t *testing.T) {
 				{Pos{1, 1}, EOF, ""},
 			},
 		},
+		{
+			name:  "Ident",
+			input: "key",
+			expect: []Token{
+				{Pos{1, 0}, IDENT, "key"},
+				{Pos{1, 3}, EOF, ""},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

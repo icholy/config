@@ -97,15 +97,21 @@ func (l *Lexer) Next() Token {
 		}
 	case isDigit(ch) || ch == '-':
 		return Token{
-			Type: NUMBER,
 			Pos:  pos,
+			Type: NUMBER,
 			Text: l.number(),
 		}
 	case ch == '"':
 		return Token{
-			Type: STRING,
 			Pos:  pos,
+			Type: STRING,
 			Text: l.str(),
+		}
+	case isAlpha(ch):
+		return Token{
+			Pos:  pos,
+			Type: IDENT,
+			Text: l.ident(),
 		}
 	case ch == '=':
 		return l.chartok(ASSIGN)
@@ -180,19 +186,19 @@ func (l *Lexer) number() string {
 func (l *Lexer) str() string {
 	l.read()
 	var escaped bool
-	var b strings.Builder
+	var text strings.Builder
 	for !l.eof() {
 		ch := l.peek()
 		if escaped {
 			switch ch {
 			case 't':
-				b.WriteByte('\t')
+				text.WriteByte('\t')
 			case 'r':
-				b.WriteByte('\r')
+				text.WriteByte('\r')
 			case 'n':
-				b.WriteByte('\n')
+				text.WriteByte('\n')
 			default:
-				b.WriteRune(ch)
+				text.WriteRune(ch)
 			}
 			escaped = false
 		} else {
@@ -202,17 +208,31 @@ func (l *Lexer) str() string {
 			if ch == '\\' {
 				escaped = true
 			} else {
-				b.WriteRune(ch)
+				text.WriteRune(ch)
 			}
 		}
 		l.read()
 	}
 	l.read()
-	return b.String()
+	return text.String()
+}
+
+func (l *Lexer) ident() string {
+	var text strings.Builder
+	ch := l.peek()
+	for isAlpha(ch) || isDigit(ch) || ch == '_' {
+		text.WriteRune(l.read())
+		ch = l.peek()
+	}
+	return text.String()
 }
 
 func isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+func isAlpha(ch rune) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
 }
 
 func isWhite(ch rune) bool {
