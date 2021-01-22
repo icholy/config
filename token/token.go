@@ -83,7 +83,7 @@ func NewLexer(input string) *Lexer {
 	return &Lexer{
 		// TODO: make sure this is correct
 		data:    []rune(input),
-		current: Pos{Line: 1},
+		current: Pos{Line: 1, Column: 1},
 	}
 }
 
