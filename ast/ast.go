@@ -2,7 +2,7 @@ package ast
 
 import "go/token"
 
-// Value
+// Value ...
 type Value interface{ value() }
 
 // Block is a collection of entries
@@ -13,11 +13,13 @@ type Block struct {
 
 func (Block) value() {}
 
+// Ident ...
 type Ident struct {
 	Start token.Pos
 	Value string
 }
 
+// Number ...
 type Number struct {
 	Start token.Pos
 	Value float64
@@ -25,6 +27,7 @@ type Number struct {
 
 func (Number) value() {}
 
+// Bool ...
 type Bool struct {
 	Start token.Pos
 	Value bool
@@ -32,6 +35,7 @@ type Bool struct {
 
 func (Bool) value() {}
 
+// String ...
 type String struct {
 	Start token.Pos
 	Value string
