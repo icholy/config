@@ -61,7 +61,7 @@ func (t Type) String() string {
 
 // Pos is the position inside the file
 type Pos struct {
-	Line, Column int
+	Line, Column, Offset int
 }
 
 // Token contains a token's type and text
@@ -182,6 +182,7 @@ func (l *Lexer) read() rune {
 	} else {
 		l.current.Column++
 	}
+	l.current.Offset++
 	l.index++
 	return ch
 }
