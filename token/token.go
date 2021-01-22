@@ -83,33 +83,6 @@ func NewLexer(input string) *Lexer {
 	}
 }
 
-// eof is a sentinel value used in place of a rune when we're
-// at the end of the input
-const eof = 0x00
-
-// eof returns true when we're at the end of file
-func (l *Lexer) eof() bool {
-	return l.index >= len(l.data)
-}
-
-// read a rune and advance to the next one
-func (l *Lexer) read() rune {
-	if l.eof() {
-		return eof
-	}
-	l.index++
-	l.pos.Column++
-	return l.data[l.index-1]
-}
-
-// peek reveals the next rune without advancing
-func (l *Lexer) peek() rune {
-	if l.eof() {
-		return eof
-	}
-	return l.data[l.index]
-}
-
 // Next returns the next token
 func (l *Lexer) Next() Token {
 	l.whitespace()
@@ -149,6 +122,33 @@ func (l *Lexer) Next() Token {
 	default:
 		return l.chartok(INVALID)
 	}
+}
+
+// eof is a sentinel value used in place of a rune when we're
+// at the end of the input
+const eof = 0x00
+
+// eof returns true when we're at the end of file
+func (l *Lexer) eof() bool {
+	return l.index >= len(l.data)
+}
+
+// read a rune and advance to the next one
+func (l *Lexer) read() rune {
+	if l.eof() {
+		return eof
+	}
+	l.index++
+	l.pos.Column++
+	return l.data[l.index-1]
+}
+
+// peek reveals the next rune without advancing
+func (l *Lexer) peek() rune {
+	if l.eof() {
+		return eof
+	}
+	return l.data[l.index]
 }
 
 func (l *Lexer) whitespace() {
