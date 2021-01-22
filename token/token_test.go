@@ -45,6 +45,13 @@ func TestLexer(t *testing.T) {
 			},
 		},
 		{
+			name:  "BadString",
+			input: `"whoops`,
+			expect: []Token{
+				{Pos{1, 0}, INVALID, "whoops"},
+			},
+		},
+		{
 			name:  "Assign",
 			input: "=",
 			expect: []Token{

@@ -103,10 +103,14 @@ func (l *Lexer) Next() Token {
 			Text: l.number(),
 		}
 	case ch == '"':
+		text, ok := l.str()
+		if !ok {
+			return l.invalid(pos, text)
+		}
 		return Token{
 			Pos:  pos,
 			Type: STRING,
-			Text: l.str(),
+			Text: text,
 		}
 	case isAlpha(ch):
 		text := l.ident()
@@ -118,7 +122,7 @@ func (l *Lexer) Next() Token {
 	case ch == '/':
 		text, ok := l.comment()
 		if !ok {
-			return l.invalid(text)
+			return l.invalid(pos, text)
 		}
 		return Token{
 			Pos:  pos,
@@ -197,8 +201,7 @@ func (l *Lexer) chartok(typ Type) Token {
 }
 
 // invalid is a helper which returns an invalid token
-func (l *Lexer) invalid(text string) Token {
-	pos := l.pos
+func (l *Lexer) invalid(pos Pos, text string) Token {
 	return Token{
 		Pos:  pos,
 		Type: INVALID,
@@ -219,7 +222,7 @@ func (l *Lexer) number() string {
 }
 
 // str reads a string literal
-func (l *Lexer) str() string {
+func (l *Lexer) str() (string, bool) {
 	l.read()
 	var escaped bool
 	var text strings.Builder
@@ -239,7 +242,8 @@ func (l *Lexer) str() string {
 			escaped = false
 		} else {
 			if ch == '"' {
-				break
+				l.read()
+				return text.String(), true
 			}
 			if ch == '\\' {
 				escaped = true
@@ -249,8 +253,7 @@ func (l *Lexer) str() string {
 		}
 		l.read()
 	}
-	l.read()
-	return text.String()
+	return text.String(), false
 }
 
 // ident reads an identifier
