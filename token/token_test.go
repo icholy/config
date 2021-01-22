@@ -13,14 +13,14 @@ func TestLexer(t *testing.T) {
 		expect []Token
 	}{
 		{
-			name:  "eof",
+			name:  "EOF",
 			input: "",
 			expect: []Token{
 				{Pos{1, 0}, EOF, ""},
 			},
 		},
 		{
-			name:  "int",
+			name:  "Int",
 			input: "42",
 			expect: []Token{
 				{Pos{1, 0}, NUMBER, "42"},
@@ -28,7 +28,7 @@ func TestLexer(t *testing.T) {
 			},
 		},
 		{
-			name:  "int",
+			name:  "NegativeInt",
 			input: "-42",
 			expect: []Token{
 				{Pos{1, 0}, NUMBER, "-42"},
