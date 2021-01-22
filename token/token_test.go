@@ -22,6 +22,21 @@ func TestLexer(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:  "int",
+			input: "42",
+			expect: []Token{
+				{
+					Pos:  Pos{1, 0},
+					Type: NUMBER,
+					Text: "42",
+				},
+				{
+					Pos:  Pos{1, 2},
+					Type: EOF,
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
