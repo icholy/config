@@ -162,6 +162,11 @@ func (l *Lexer) eof() bool {
 	return l.index >= len(l.data)
 }
 
+// newline returns true if the next character is a newline
+func (l *Lexer) newline() bool {
+	return isNewline(l.peek())
+}
+
 // read a rune and advance to the next one
 func (l *Lexer) read() rune {
 	if l.eof() {
@@ -195,12 +200,8 @@ func (l *Lexer) expect(ch rune) bool {
 func (l *Lexer) whitespace() (Pos, bool) {
 	var newline bool
 	var pos Pos
-	for {
-		ch := l.peek()
-		if !isWhite(ch) {
-			break
-		}
-		if !newline && isNewline(ch) {
+	for isWhite(l.peek()) {
+		if !newline && l.newline() {
 			newline = true
 			pos = l.current
 		}
@@ -297,7 +298,7 @@ func (l *Lexer) comment() (string, bool) {
 		return text.String(), false
 	}
 	text.WriteRune('/')
-	for !l.eof() && !isNewline(l.peek()) {
+	for !l.eof() && !l.newline() {
 		text.WriteRune(l.read())
 	}
 	return text.String(), true
