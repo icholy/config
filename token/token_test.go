@@ -85,6 +85,20 @@ func TestLexer(t *testing.T) {
 				{Pos{1, 9}, EOF, ""},
 			},
 		},
+		{
+			name:  "Newline",
+			input: "foo = true\nbar=123",
+			expect: []Token{
+				{Pos{1, 0}, IDENT, "foo"},
+				{Pos{1, 4}, ASSIGN, "="},
+				{Pos{1, 6}, IDENT, "true"},
+				{Pos{1, 10}, NEWLINE, ""},
+				{Pos{1, 11}, IDENT, "bar"},
+				{Pos{1, 14}, ASSIGN, "="},
+				{Pos{1, 15}, NUMBER, "123"},
+				{Pos{1, 18}, EOF, ""},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

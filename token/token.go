@@ -22,6 +22,7 @@ const (
 	ASSIGN
 	BOOL
 	COMMENT
+	NEWLINE
 )
 
 // String returns a string representation of the type
@@ -51,6 +52,8 @@ func (t Type) String() string {
 		return "ASSIGN"
 	case COMMENT:
 		return "COMMENT"
+	case NEWLINE:
+		return "NEWLINE"
 	default:
 		return fmt.Sprintf("UNKNOWN(%d)", t)
 	}
@@ -86,7 +89,12 @@ func NewLexer(input string) *Lexer {
 
 // Next returns the next token
 func (l *Lexer) Next() Token {
-	l.whitespace()
+	if pos, ok := l.whitespace(); ok {
+		return Token{
+			Pos:  pos,
+			Type: NEWLINE,
+		}
+	}
 	ch := l.peek()
 	pos := l.pos
 	switch {
@@ -94,7 +102,6 @@ func (l *Lexer) Next() Token {
 		return Token{
 			Pos:  pos,
 			Type: EOF,
-			Text: "",
 		}
 	case isDigit(ch) || ch == '-':
 		return Token{
@@ -183,11 +190,23 @@ func (l *Lexer) expect(ch rune) bool {
 	return true
 }
 
-// whitespace skips all whitespace
-func (l *Lexer) whitespace() {
-	for isWhite(l.peek()) {
+// whitespace skips all whitespace and returns the position of the first newline.
+// If the whitespace does not contain a newline, the second return value is false.
+func (l *Lexer) whitespace() (Pos, bool) {
+	var newline bool
+	var pos Pos
+	for {
+		ch := l.peek()
+		if !isWhite(ch) {
+			break
+		}
+		if !newline && isNewline(ch) {
+			newline = true
+			pos = l.pos
+		}
 		l.read()
 	}
+	return pos, newline
 }
 
 // chartok is a helper which returns a single character token
