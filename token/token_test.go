@@ -61,11 +61,11 @@ func TestLexer(t *testing.T) {
 			},
 		},
 		{
-			name:  "Bool",
-			input: "true",
+			name:  "LineComment",
+			input: "// this is a comment",
 			expect: []Token{
-				{Pos{1, 0}, BOOL, "true"},
-				{Pos{1, 4}, EOF, ""},
+				{Pos{1, 0}, COMMENT, "// this is a comment"},
+				{Pos{1, 20}, EOF, ""},
 			},
 		},
 	}

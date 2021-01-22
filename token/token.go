@@ -21,6 +21,7 @@ const (
 	COMMA
 	ASSIGN
 	BOOL
+	COMMENT
 )
 
 // String returns a string representation of the type
@@ -48,8 +49,8 @@ func (t Type) String() string {
 		return "COMMA"
 	case ASSIGN:
 		return "ASSIGN"
-	case BOOL:
-		return "BOOL"
+	case COMMENT:
+		return "COMMENT"
 	default:
 		return fmt.Sprintf("UNKNOWN(%d)", t)
 	}
@@ -108,17 +109,20 @@ func (l *Lexer) Next() Token {
 			Text: l.str(),
 		}
 	case isAlpha(ch):
-		text := l.alphanumeric()
-		if text == "true" || text == "false" {
-			return Token{
-				Pos:  pos,
-				Type: BOOL,
-				Text: text,
-			}
-		}
+		text := l.ident()
 		return Token{
 			Pos:  pos,
 			Type: IDENT,
+			Text: text,
+		}
+	case ch == '/':
+		text, ok := l.comment()
+		if !ok {
+			return l.invalid(text)
+		}
+		return Token{
+			Pos:  pos,
+			Type: COMMENT,
 			Text: text,
 		}
 	case ch == '=':
@@ -165,6 +169,16 @@ func (l *Lexer) peek() rune {
 	return l.data[l.index]
 }
 
+// expect checks if the next rune is equal to ch.
+// if it matches, true is returned and the tokenizer advnaces to the next rune.
+func (l *Lexer) expect(ch rune) bool {
+	if l.peek() != ch {
+		return false
+	}
+	l.read()
+	return true
+}
+
 // whitespace skips all whitespace
 func (l *Lexer) whitespace() {
 	for isWhite(l.peek()) {
@@ -179,6 +193,16 @@ func (l *Lexer) chartok(typ Type) Token {
 		Pos:  pos,
 		Type: typ,
 		Text: string([]rune{l.read()}),
+	}
+}
+
+// invalid is a helper which returns an invalid token
+func (l *Lexer) invalid(text string) Token {
+	pos := l.pos
+	return Token{
+		Pos:  pos,
+		Type: INVALID,
+		Text: text,
 	}
 }
 
@@ -229,8 +253,8 @@ func (l *Lexer) str() string {
 	return text.String()
 }
 
-// alphanumeric reads an ident or keyword
-func (l *Lexer) alphanumeric() string {
+// ident reads an identifier
+func (l *Lexer) ident() string {
 	var text strings.Builder
 	ch := l.peek()
 	for isAlpha(ch) || isDigit(ch) || ch == '_' {
@@ -238,6 +262,23 @@ func (l *Lexer) alphanumeric() string {
 		ch = l.peek()
 	}
 	return text.String()
+}
+
+// comment reads a comment. The second bool parameter indicates if it's valid.
+func (l *Lexer) comment() (string, bool) {
+	var text strings.Builder
+	if !l.expect('/') {
+		return text.String(), false
+	}
+	text.WriteRune('/')
+	if !l.expect('/') {
+		return text.String(), false
+	}
+	text.WriteRune('/')
+	for !l.eof() && !isNewline(l.peek()) {
+		text.WriteRune(l.read())
+	}
+	return text.String(), true
 }
 
 // isDigit returns true if ch is a digit
@@ -252,5 +293,10 @@ func isAlpha(ch rune) bool {
 
 // isWhite returns true if ch is whitespace
 func isWhite(ch rune) bool {
-	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
+	return ch == ' ' || ch == '\t' || isNewline(ch)
+}
+
+// isNewline returns true if ch is a newline
+func isNewline(ch rune) bool {
+	return ch == '\n' || ch == '\r'
 }
