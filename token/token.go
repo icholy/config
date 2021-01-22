@@ -157,12 +157,14 @@ func (l *Lexer) peek() rune {
 	return l.data[l.index]
 }
 
+// whitespace skips all whitespace
 func (l *Lexer) whitespace() {
 	for isWhite(l.peek()) {
 		l.read()
 	}
 }
 
+// chartok is a helper which returns a single character token
 func (l *Lexer) chartok(typ Type) Token {
 	pos := l.pos
 	return Token{
@@ -172,6 +174,7 @@ func (l *Lexer) chartok(typ Type) Token {
 	}
 }
 
+// number reads a number literal
 func (l *Lexer) number() string {
 	var text strings.Builder
 	if l.peek() == '-' || l.peek() == '+' {
@@ -183,6 +186,7 @@ func (l *Lexer) number() string {
 	return text.String()
 }
 
+// str reads a string literal
 func (l *Lexer) str() string {
 	l.read()
 	var escaped bool
@@ -217,6 +221,7 @@ func (l *Lexer) str() string {
 	return text.String()
 }
 
+// ident reads an identifier
 func (l *Lexer) ident() string {
 	var text strings.Builder
 	ch := l.peek()
@@ -227,14 +232,17 @@ func (l *Lexer) ident() string {
 	return text.String()
 }
 
+// isDigit returns true if ch is a digit
 func isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
 }
 
+// isAlpha returns true if ch is a letter
 func isAlpha(ch rune) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
 }
 
+// isWhite returns true if ch is whitespace
 func isWhite(ch rune) bool {
 	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
 }
