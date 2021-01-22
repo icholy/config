@@ -1,10 +1,5 @@
 package token
 
-import (
-	"bufio"
-	"io"
-)
-
 // Type is the token type
 type Type int
 
@@ -35,23 +30,52 @@ type Token struct {
 
 // Lexer tokenizes a reader
 type Lexer struct {
-	r *bufio.Reader
-	p Pos
+	data  []rune
+	index int
+	pos   Pos
 }
 
 // NewLexer constructs a Lexer instance
-func NewLexer(r io.Reader) *Lexer {
+func NewLexer(input string) *Lexer {
 	return &Lexer{
-		r: bufio.NewReader(r),
-		p: Pos{Line: 1},
+		// TODO: make sure this is correct
+		data: []rune(input),
+		pos:  Pos{Line: 1},
 	}
+}
+
+const eof = 0x00
+
+func (l *Lexer) read() rune {
+	if l.index >= len(l.data) {
+		return eof
+	}
+	l.index++
+	return l.data[l.index-1]
+}
+
+func (l *Lexer) peek() rune {
+	if l.index >= len(l.data) {
+		return eof
+	}
+	return l.data[l.index]
 }
 
 // Next returns the next token
 func (l *Lexer) Next() Token {
-	return Token{
-		Pos:  l.p,
-		Type: EOF,
-		Text: "",
+
+	switch l.peek() {
+	case eof:
+		return Token{
+			Pos:  l.pos,
+			Type: EOF,
+			Text: "",
+		}
+	default:
+		return Token{
+			Pos:  l.pos,
+			Type: INVALID,
+			Text: string([]rune{l.read()}),
+		}
 	}
 }

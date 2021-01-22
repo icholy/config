@@ -1,7 +1,6 @@
 package token
 
 import (
-	"strings"
 	"testing"
 
 	"gotest.tools/v3/assert"
@@ -27,7 +26,7 @@ func TestLexer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var actual []Token
-			lex := NewLexer(strings.NewReader(tt.input))
+			lex := NewLexer(tt.input)
 			for {
 				tok := lex.Next()
 				actual = append(actual, tok)
