@@ -1,6 +1,9 @@
 package token
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Type is the token type
 type Type int
@@ -105,35 +108,38 @@ func (l *Lexer) peek() rune {
 // Next returns the next token
 func (l *Lexer) Next() Token {
 	r := l.peek()
+	pos := l.pos
 	switch {
 	case r == eof:
 		return Token{
-			Pos:  l.pos,
+			Pos:  pos,
 			Type: EOF,
 			Text: "",
 		}
 	case isDigit(r) || r == '-':
-		return l.number()
+		return Token{
+			Type: NUMBER,
+			Pos:  pos,
+			Text: l.number(),
+		}
 	default:
 		return Token{
-			Pos:  l.pos,
+			Pos:  pos,
 			Type: INVALID,
 			Text: string([]rune{l.read()}),
 		}
 	}
 }
 
-func (l *Lexer) number() Token {
-	start := l.pos
-	text := []rune{l.read()}
+func (l *Lexer) number() string {
+	var text strings.Builder
+	if l.peek() == '-' || l.peek() == '+' {
+		text.WriteRune(l.read())
+	}
 	for isDigit(l.peek()) {
-		text = append(text, l.read())
+		text.WriteRune(l.read())
 	}
-	return Token{
-		Pos:  start,
-		Type: NUMBER,
-		Text: string(text),
-	}
+	return text.String()
 }
 
 func isDigit(r rune) bool {
