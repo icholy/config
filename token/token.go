@@ -112,6 +112,7 @@ func (l *Lexer) peek() rune {
 
 // Next returns the next token
 func (l *Lexer) Next() Token {
+	l.whitespace()
 	ch := l.peek()
 	pos := l.pos
 	switch {
@@ -147,6 +148,12 @@ func (l *Lexer) Next() Token {
 		return l.chartok(COMMA)
 	default:
 		return l.chartok(INVALID)
+	}
+}
+
+func (l *Lexer) whitespace() {
+	for isWhite(l.peek()) {
+		l.read()
 	}
 }
 
@@ -206,4 +213,8 @@ func (l *Lexer) str() string {
 
 func isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+func isWhite(ch rune) bool {
+	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
 }
