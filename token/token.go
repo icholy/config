@@ -118,7 +118,7 @@ func (l *Lexer) Next() Token {
 			Text:  l.number(),
 		}
 	case ch == '"':
-		text, ok := l.str()
+		text, ok := l.string()
 		if !ok {
 			return l.invalid(pos, text)
 		}
@@ -259,8 +259,8 @@ func (l *Lexer) number() string {
 	return text.String()
 }
 
-// str reads a string literal
-func (l *Lexer) str() (string, bool) {
+// string reads a string literal
+func (l *Lexer) string() (string, bool) {
 	l.read()
 	var escaped bool
 	var text strings.Builder
