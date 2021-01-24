@@ -109,9 +109,6 @@ func (p *Parser) array() (*Array, error) {
 		if p.curr.Type == token.RBRACKET {
 			break
 		}
-		if err := p.next(); err != nil {
-			return nil, err
-		}
 		// read a value
 		v, err := p.value()
 		if err != nil {
