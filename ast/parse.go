@@ -9,24 +9,20 @@ import (
 
 // Parser for the configuration language
 type Parser struct {
-	lex        *token.Lexer
-	curr, peek token.Token
+	lex  *token.Lexer
+	curr token.Token
 }
 
 // NewParser constructs a new parser
 func NewParser(lex *token.Lexer) *Parser {
-	curr := lex.Next()
-	peek := lex.Next()
 	return &Parser{
 		lex:  lex,
-		curr: curr,
-		peek: peek,
+		curr: lex.Next(),
 	}
 }
 
 func (p *Parser) next() error {
-	p.curr = p.peek
-	p.peek = p.lex.Next()
+	p.curr = p.lex.Next()
 	return nil
 }
 
