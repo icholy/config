@@ -125,12 +125,26 @@ func (p *Parser) array() (*Array, error) {
 	return a, p.next()
 }
 
+func (p *Parser) block() (*Block, error) {
+	p.assert(token.LBRACE)
+	b := &Block{
+		Start: p.tok.Start,
+	}
+	if err := p.next(); err != nil {
+		return nil, err
+	}
+	if err := p.expect(token.RBRACE); err != nil {
+		return nil, err
+	}
+	return b, p.next()
+}
+
 func (p *Parser) ident() (*Ident, error) {
 	p.assert(token.IDENT)
 	id := &Ident{
 		Start: p.tok.Start,
+		Value: p.tok.Text,
 	}
-	id.Value = p.tok.Text
 	return id, p.next()
 }
 
@@ -159,17 +173,26 @@ func (p *Parser) entry() (*Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	// read assign
-	if err := p.expect(token.ASSIGN); err != nil {
-		return nil, err
-	}
-	if err := p.next(); err != nil {
-		return nil, err
-	}
-	// read value
-	e.Value, err = p.value()
-	if err != nil {
-		return nil, err
+
+	switch p.tok.Type {
+	case token.ASSIGN:
+		// skip assign operator
+		if err := p.next(); err != nil {
+			return nil, err
+		}
+		// read value
+		e.Value, err = p.value()
+		if err != nil {
+			return nil, err
+		}
+	case token.LBRACE:
+		// read block
+		e.Value, err = p.block()
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unexpected token: %s", p.tok)
 	}
 	return e, nil
 }
