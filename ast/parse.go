@@ -51,29 +51,46 @@ func (p *Parser) parse() (*Block, error) {
 }
 
 func (p *Parser) number() (*Number, error) {
-	n := &Number{
-		Start: p.curr.Start,
-	}
 	if err := p.expect(token.NUMBER); err != nil {
 		return nil, err
 	}
-	var err error
-	n.Value, err = strconv.ParseFloat(p.curr.Text, 64)
+	v, err := strconv.ParseFloat(p.curr.Text, 64)
 	if err != nil {
 		return nil, err
+	}
+	n := &Number{
+		Start: p.curr.Start,
+		Value: v,
 	}
 	return n, p.next()
 }
 
 func (p *Parser) string() (*String, error) {
+	if err := p.expect(token.STRING); err != nil {
+		return nil, err
+	}
 	s := &String{
 		Start: p.curr.Start,
 		Value: p.curr.Text,
 	}
-	if err := p.expect(token.STRING); err != nil {
+	return s, p.next()
+}
+
+func (p *Parser) bool() (*Bool, error) {
+	if err := p.expect(token.IDENT); err != nil {
 		return nil, err
 	}
-	return s, p.next()
+	b := &Bool{
+		Start: p.curr.Start,
+	}
+	switch p.curr.Text {
+	case "false":
+	case "true":
+		b.Value = true
+	default:
+		return nil, fmt.Errorf("unexpected token: %s", p.curr)
+	}
+	return b, nil
 }
 
 func (p *Parser) ident() (*Ident, error) {
@@ -93,6 +110,8 @@ func (p *Parser) value() (Value, error) {
 		return p.number()
 	case token.STRING:
 		return p.string()
+	case token.IDENT:
+		return p.bool()
 	default:
 		return nil, fmt.Errorf("unexpected token: %s", p.curr)
 	}

@@ -39,6 +39,18 @@ func TestParse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:  "BoolEntry",
+			input: `baz = true`,
+			expect: &Block{
+				Entries: []*Entry{
+					{
+						Name:  &Ident{Value: "baz"},
+						Value: &Bool{Value: true},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
