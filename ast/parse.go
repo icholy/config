@@ -46,11 +46,14 @@ func (p *Parser) parse() (*Block, error) {
 		Start:   token.Pos{Line: 1, Column: 1, Offset: 0},
 		Entries: []*Entry{},
 	}
-	e, err := p.entry()
+	ee, err := p.entries()
 	if err != nil {
 		return nil, err
 	}
-	b.Entries = append(b.Entries, e)
+	b.Entries = ee
+	if err := p.expect(token.EOF); err != nil {
+		return nil, err
+	}
 	return b, nil
 }
 
@@ -133,6 +136,11 @@ func (p *Parser) block() (*Block, error) {
 	if err := p.next(); err != nil {
 		return nil, err
 	}
+	ee, err := p.entries()
+	if err != nil {
+		return nil, err
+	}
+	b.Entries = ee
 	if err := p.expect(token.RBRACE); err != nil {
 		return nil, err
 	}
@@ -161,6 +169,18 @@ func (p *Parser) value() (Value, error) {
 	default:
 		return nil, fmt.Errorf("unexpected token: %s", p.tok)
 	}
+}
+
+func (p *Parser) entries() ([]*Entry, error) {
+	var ee []*Entry
+	for p.tok.Type == token.IDENT {
+		e, err := p.entry()
+		if err != nil {
+			return nil, err
+		}
+		ee = append(ee, e)
+	}
+	return ee, nil
 }
 
 func (p *Parser) entry() (*Entry, error) {
