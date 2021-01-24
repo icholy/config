@@ -64,11 +64,19 @@ type Pos struct {
 	Line, Column, Offset int
 }
 
+func (p Pos) String() string {
+	return fmt.Sprintf("%d:%d", p.Line, p.Column)
+}
+
 // Token contains a token's type and text
 type Token struct {
 	Start Pos
 	Type  Type
 	Text  string
+}
+
+func (t Token) String() string {
+	return fmt.Sprintf("%s(%q)", t.Type, t.Text)
 }
 
 // Lexer tokenizes a reader

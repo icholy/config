@@ -93,11 +93,16 @@ func (p *Parser) entry() (*Entry, error) {
 	if err := p.next(); err != nil {
 		return nil, err
 	}
-	// read value
-	e.Value, err = p.number()
-	if err != nil {
-		return nil, err
+	switch p.curr.Type {
+	case token.NUMBER:
+		e.Value, err = p.number()
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unexpected token: %s", p.curr)
 	}
+	// read value
 	return e, nil
 }
 
