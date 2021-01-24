@@ -9,26 +9,26 @@ import (
 
 // Parser for the configuration language
 type Parser struct {
-	lex  *token.Lexer
-	curr token.Token
+	lex *token.Lexer
+	tok token.Token
 }
 
 // NewParser constructs a new parser
 func NewParser(lex *token.Lexer) *Parser {
 	return &Parser{
-		lex:  lex,
-		curr: lex.Next(),
+		lex: lex,
+		tok: lex.Next(),
 	}
 }
 
 func (p *Parser) next() error {
-	p.curr = p.lex.Next()
+	p.tok = p.lex.Next()
 	return nil
 }
 
 func (p *Parser) expect(t token.Type) error {
-	if p.curr.Type != t {
-		return fmt.Errorf("unexpected token: %v", p.curr)
+	if p.tok.Type != t {
+		return fmt.Errorf("unexpected token: %v", p.tok)
 	}
 	return nil
 }
@@ -56,12 +56,12 @@ func (p *Parser) parse() (*Block, error) {
 
 func (p *Parser) number() (*Number, error) {
 	p.assert(token.NUMBER)
-	v, err := strconv.ParseFloat(p.curr.Text, 64)
+	v, err := strconv.ParseFloat(p.tok.Text, 64)
 	if err != nil {
 		return nil, err
 	}
 	n := &Number{
-		Start: p.curr.Start,
+		Start: p.tok.Start,
 		Value: v,
 	}
 	return n, p.next()
@@ -70,8 +70,8 @@ func (p *Parser) number() (*Number, error) {
 func (p *Parser) string() (*String, error) {
 	p.assert(token.STRING)
 	s := &String{
-		Start: p.curr.Start,
-		Value: p.curr.Text,
+		Start: p.tok.Start,
+		Value: p.tok.Text,
 	}
 	return s, p.next()
 }
@@ -79,14 +79,14 @@ func (p *Parser) string() (*String, error) {
 func (p *Parser) bool() (*Bool, error) {
 	p.assert(token.IDENT)
 	b := &Bool{
-		Start: p.curr.Start,
+		Start: p.tok.Start,
 	}
-	switch p.curr.Text {
+	switch p.tok.Text {
 	case "false":
 	case "true":
 		b.Value = true
 	default:
-		return nil, fmt.Errorf("unexpected token: %s", p.curr)
+		return nil, fmt.Errorf("unexpected token: %s", p.tok)
 	}
 	return b, p.next()
 }
@@ -94,7 +94,7 @@ func (p *Parser) bool() (*Bool, error) {
 func (p *Parser) array() (*Array, error) {
 	p.assert(token.LBRACKET)
 	a := &Array{
-		Start: p.curr.Start,
+		Start: p.tok.Start,
 	}
 	// read left bracket
 	if err := p.next(); err != nil {
@@ -102,7 +102,7 @@ func (p *Parser) array() (*Array, error) {
 	}
 	for {
 		// found right bracket, we're done
-		if p.curr.Type == token.RBRACKET {
+		if p.tok.Type == token.RBRACKET {
 			break
 		}
 		// read a value
@@ -112,7 +112,7 @@ func (p *Parser) array() (*Array, error) {
 		}
 		a.Values = append(a.Values, v)
 		// if there's no comma, we're done
-		if p.curr.Type != token.COMMA {
+		if p.tok.Type != token.COMMA {
 			break
 		}
 		if err := p.next(); err != nil {
@@ -128,14 +128,14 @@ func (p *Parser) array() (*Array, error) {
 func (p *Parser) ident() (*Ident, error) {
 	p.assert(token.IDENT)
 	id := &Ident{
-		Start: p.curr.Start,
+		Start: p.tok.Start,
 	}
-	id.Value = p.curr.Text
+	id.Value = p.tok.Text
 	return id, p.next()
 }
 
 func (p *Parser) value() (Value, error) {
-	switch p.curr.Type {
+	switch p.tok.Type {
 	case token.NUMBER:
 		return p.number()
 	case token.STRING:
@@ -145,13 +145,13 @@ func (p *Parser) value() (Value, error) {
 	case token.LBRACKET:
 		return p.array()
 	default:
-		return nil, fmt.Errorf("unexpected token: %s", p.curr)
+		return nil, fmt.Errorf("unexpected token: %s", p.tok)
 	}
 }
 
 func (p *Parser) entry() (*Entry, error) {
 	e := &Entry{
-		Start: p.curr.Start,
+		Start: p.tok.Start,
 	}
 	var err error
 	// read name
