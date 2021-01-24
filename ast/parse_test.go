@@ -40,13 +40,25 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:  "BoolEntry",
+			name:  "TrueEntry",
 			input: `baz = true`,
 			expect: &Block{
 				Entries: []*Entry{
 					{
 						Name:  &Ident{Value: "baz"},
 						Value: &Bool{Value: true},
+					},
+				},
+			},
+		},
+		{
+			name:  "FalseEntry",
+			input: `baz = false`,
+			expect: &Block{
+				Entries: []*Entry{
+					{
+						Name:  &Ident{Value: "baz"},
+						Value: &Bool{Value: false},
 					},
 				},
 			},
@@ -63,6 +75,34 @@ func TestParse(t *testing.T) {
 								&Number{Value: 1},
 								&Bool{Value: false},
 								&String{Value: "hello"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:  "EmptyArrayEntry",
+			input: `poo = []]`,
+			expect: &Block{
+				Entries: []*Entry{
+					{
+						Name:  &Ident{Value: "poo"},
+						Value: &Array{},
+					},
+				},
+			},
+		},
+		{
+			name:  "ArrayTrailingCommaEntry",
+			input: `poo = [1,]]`,
+			expect: &Block{
+				Entries: []*Entry{
+					{
+						Name: &Ident{Value: "poo"},
+						Value: &Array{
+							Values: []Value{
+								&Number{Value: 1},
 							},
 						},
 					},
