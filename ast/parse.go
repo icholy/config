@@ -193,7 +193,6 @@ func (p *Parser) entry() (*Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	switch p.tok.Type {
 	case token.ASSIGN:
 		// skip assign operator
