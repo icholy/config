@@ -92,7 +92,7 @@ func (p *Parser) bool() (*Bool, error) {
 	default:
 		return nil, fmt.Errorf("unexpected token: %s", p.curr)
 	}
-	return b, nil
+	return b, p.next()
 }
 
 func (p *Parser) array() (*Array, error) {
