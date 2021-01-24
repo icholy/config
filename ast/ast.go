@@ -43,6 +43,13 @@ type String struct {
 
 func (String) value() {}
 
+type Array struct {
+	Start  token.Pos
+	Values []Value
+}
+
+func (Array) value() {}
+
 // Entry is a key/value pair
 type Entry struct {
 	Start token.Pos

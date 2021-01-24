@@ -51,6 +51,24 @@ func TestParse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:  "ArrayEntry",
+			input: `poo = [1, false, "hello"]]`,
+			expect: &Block{
+				Entries: []*Entry{
+					{
+						Name: &Ident{Value: "poo"},
+						Value: &Array{
+							Values: []Value{
+								&Number{Value: 1},
+								&Bool{Value: false},
+								&String{Value: "hello"},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
