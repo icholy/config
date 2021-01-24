@@ -37,6 +37,14 @@ func (p *Parser) expect(t token.Type) error {
 	return nil
 }
 
+// assert panics if the current token type doesn't match t.
+// this helper should only be used in places where it should not ever panic.
+func (p *Parser) assert(t token.Type) {
+	if err := p.expect(t); err != nil {
+		panic(err)
+	}
+}
+
 func (p *Parser) parse() (*Block, error) {
 	b := &Block{
 		Start:   token.Pos{Line: 1, Column: 1, Offset: 0},
@@ -51,9 +59,7 @@ func (p *Parser) parse() (*Block, error) {
 }
 
 func (p *Parser) number() (*Number, error) {
-	if err := p.expect(token.NUMBER); err != nil {
-		return nil, err
-	}
+	p.assert(token.NUMBER)
 	v, err := strconv.ParseFloat(p.curr.Text, 64)
 	if err != nil {
 		return nil, err
@@ -66,9 +72,7 @@ func (p *Parser) number() (*Number, error) {
 }
 
 func (p *Parser) string() (*String, error) {
-	if err := p.expect(token.STRING); err != nil {
-		return nil, err
-	}
+	p.assert(token.STRING)
 	s := &String{
 		Start: p.curr.Start,
 		Value: p.curr.Text,
@@ -77,9 +81,7 @@ func (p *Parser) string() (*String, error) {
 }
 
 func (p *Parser) bool() (*Bool, error) {
-	if err := p.expect(token.IDENT); err != nil {
-		return nil, err
-	}
+	p.assert(token.IDENT)
 	b := &Bool{
 		Start: p.curr.Start,
 	}
@@ -93,12 +95,47 @@ func (p *Parser) bool() (*Bool, error) {
 	return b, nil
 }
 
-func (p *Parser) ident() (*Ident, error) {
-	id := &Ident{
+func (p *Parser) array() (*Array, error) {
+	p.assert(token.LBRACKET)
+	a := &Array{
 		Start: p.curr.Start,
 	}
-	if err := p.expect(token.IDENT); err != nil {
+	// read left bracket
+	if err := p.next(); err != nil {
 		return nil, err
+	}
+	for {
+		// found right bracket, we're done
+		if p.curr.Type == token.RBRACKET {
+			break
+		}
+		if err := p.next(); err != nil {
+			return nil, err
+		}
+		// read a value
+		v, err := p.value()
+		if err != nil {
+			return nil, err
+		}
+		a.Values = append(a.Values, v)
+		// if there's no comma, we're done
+		if p.curr.Type != token.COMMA {
+			break
+		}
+		if err := p.next(); err != nil {
+			return nil, err
+		}
+	}
+	if err := p.expect(token.RBRACKET); err != nil {
+		return nil, err
+	}
+	return a, p.next()
+}
+
+func (p *Parser) ident() (*Ident, error) {
+	p.assert(token.IDENT)
+	id := &Ident{
+		Start: p.curr.Start,
 	}
 	id.Value = p.curr.Text
 	return id, p.next()
@@ -112,6 +149,8 @@ func (p *Parser) value() (Value, error) {
 		return p.string()
 	case token.IDENT:
 		return p.bool()
+	case token.LBRACKET:
+		return p.array()
 	default:
 		return nil, fmt.Errorf("unexpected token: %s", p.curr)
 	}
