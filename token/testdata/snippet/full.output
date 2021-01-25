@@ -1,11 +1,11 @@
-01: 
-02: block {
-03:     foo = 123
-04:     test = "hello"
-05: 
-06:     nested {
-07:         array = [1, 2, false]
-08:     }
-09: }
-10: 
-11: enable = false
+00001: 
+00002: block {
+00003:     foo = 123
+00004:     test = "hello"
+00005: 
+00006:     nested {
+00007:         array = [1, 2, false]
+00008:     }
+00009: }
+00010: 
+00011: enable = false

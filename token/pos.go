@@ -16,32 +16,32 @@ func (p Pos) String() string {
 	return fmt.Sprintf("%d:%d", p.Line, p.Column)
 }
 
-// Snippet is a range of input used to display errors
-type Snippet struct {
+// Span is a range of input used to display errors
+type Span struct {
 	Start Pos
 	Lines []string
 }
 
-func (s Snippet) String() string {
+func (s Span) String() string {
 	var b strings.Builder
 	for i := 0; i < s.Start.Column-1; i++ {
 		b.WriteRune(' ')
 	}
 	for i, line := range s.Lines {
-		fmt.Fprintf(&b, "%02d: %s\n", s.Start.Line+i, line)
+		fmt.Fprintf(&b, "%05d: %s\n", s.Start.Line+i, line)
 	}
 	return b.String()
 }
 
 // Snip returns a snippet between start and end
-func Snip(input string, start, end Pos) Snippet {
+func Snip(input string, start, end Pos) Span {
 	var lines []string
 	input = string([]rune(input)[start.Offset:end.Offset])
 	sc := bufio.NewScanner(strings.NewReader(input))
 	for sc.Scan() {
 		lines = append(lines, sc.Text())
 	}
-	return Snippet{
+	return Span{
 		Start: start,
 		Lines: lines,
 	}
