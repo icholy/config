@@ -14,6 +14,11 @@ func TestSnip(t *testing.T) {
 	}{
 		{
 			start:  Pos{1, 1, 0},
+			end:    Pos{1, 1, 0},
+			output: "empty.output",
+		},
+		{
+			start:  Pos{1, 1, 0},
 			end:    Pos{11, 15, 119},
 			output: "full.output",
 		},
