@@ -78,16 +78,16 @@ func (s *String) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.Value)
 }
 
-type Array struct {
+type List struct {
 	Start  token.Pos
 	Values []Value
 }
 
-func (Array) value() {}
+func (List) value() {}
 
 // MarshalJSON implements json.Marshaler
-func (a *Array) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.Values)
+func (l *List) MarshalJSON() ([]byte, error) {
+	return json.Marshal(l.Values)
 }
 
 // Entry is a key/value pair

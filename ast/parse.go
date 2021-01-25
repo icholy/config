@@ -104,9 +104,9 @@ func (p *Parser) bool() (*Bool, error) {
 	return b, p.next()
 }
 
-func (p *Parser) array() (*Array, error) {
+func (p *Parser) list() (*List, error) {
 	p.assert(token.LBRACKET)
-	a := &Array{
+	l := &List{
 		Start: p.tok.Start,
 	}
 	// read left bracket
@@ -127,7 +127,7 @@ func (p *Parser) array() (*Array, error) {
 		if err != nil {
 			return nil, err
 		}
-		a.Values = append(a.Values, v)
+		l.Values = append(l.Values, v)
 		// skip newlines
 		if err := p.newlines(); err != nil {
 			return nil, err
@@ -147,7 +147,7 @@ func (p *Parser) array() (*Array, error) {
 	if err := p.expect(token.RBRACKET); err != nil {
 		return nil, err
 	}
-	return a, p.next()
+	return l, p.next()
 }
 
 func (p *Parser) block() (*Block, error) {
@@ -190,7 +190,7 @@ func (p *Parser) value() (Value, error) {
 	case token.IDENT:
 		return p.bool()
 	case token.LBRACKET:
-		return p.array()
+		return p.list()
 	default:
 		return nil, fmt.Errorf("unexpected token: %s", p.tok)
 	}

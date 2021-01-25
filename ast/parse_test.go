@@ -67,13 +67,13 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:  "ArrayEntry",
+			name:  "ListEntry",
 			input: `poo = [1, false, "hello"]`,
 			expect: &Block{
 				Entries: []*Entry{
 					{
 						Name: &Ident{Value: "poo"},
-						Value: &Array{
+						Value: &List{
 							Values: []Value{
 								&Number{Value: 1},
 								&Bool{Value: false},
@@ -85,25 +85,25 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:  "EmptyArrayEntry",
+			name:  "EmptyListEntry",
 			input: "poo = []",
 			expect: &Block{
 				Entries: []*Entry{
 					{
 						Name:  &Ident{Value: "poo"},
-						Value: &Array{},
+						Value: &List{},
 					},
 				},
 			},
 		},
 		{
-			name:  "ArrayTrailingCommaEntry",
+			name:  "ListTrailingCommaEntry",
 			input: "poo = [1,]",
 			expect: &Block{
 				Entries: []*Entry{
 					{
 						Name: &Ident{Value: "poo"},
-						Value: &Array{
+						Value: &List{
 							Values: []Value{
 								&Number{Value: 1},
 							},
@@ -113,13 +113,13 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:  "ArrayWithNewline",
+			name:  "ListWithNewline",
 			input: "poo = [\n1,\n]",
 			expect: &Block{
 				Entries: []*Entry{
 					{
 						Name: &Ident{Value: "poo"},
-						Value: &Array{
+						Value: &List{
 							Values: []Value{
 								&Number{Value: 1},
 							},
