@@ -195,16 +195,16 @@ func TestParse(t *testing.T) {
 func TestParseGolden(t *testing.T) {
 	tests := []struct {
 		name string
-		dir  string
-		err  string
-	}{}
+	}{
+		{"basic"},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			data := golden.Get(t, filepath.Join(tt.dir, "input.conf"))
+			data := golden.Get(t, filepath.Join(tt.name, "input.conf"))
 			block, err := Parse(string(data))
 			assert.NilError(t, err)
 			actual := litter.Sdump(block)
-			golden.Assert(t, actual, filepath.Join(tt.dir, "output.ast"))
+			golden.Assert(t, actual, filepath.Join(tt.name, "output.ast"))
 		})
 	}
 }
