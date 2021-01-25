@@ -33,6 +33,16 @@ func (p *Parser) expect(t token.Type) error {
 	return nil
 }
 
+// newline skips newline tokens
+func (p *Parser) newlines() error {
+	for p.tok.Type == token.NEWLINE {
+		if err := p.next(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // assert panics if the current token type doesn't match t.
 // this helper should only be used in places where it should not ever panic.
 func (p *Parser) assert(t token.Type) {
@@ -104,6 +114,10 @@ func (p *Parser) array() (*Array, error) {
 		return nil, err
 	}
 	for {
+		// skip newlines
+		if err := p.newlines(); err != nil {
+			return nil, err
+		}
 		// found right bracket, we're done
 		if p.tok.Type == token.RBRACKET {
 			break
@@ -114,6 +128,10 @@ func (p *Parser) array() (*Array, error) {
 			return nil, err
 		}
 		a.Values = append(a.Values, v)
+		// skip newlines
+		if err := p.newlines(); err != nil {
+			return nil, err
+		}
 		// if there's no comma, we're done
 		if p.tok.Type != token.COMMA {
 			break
@@ -121,6 +139,10 @@ func (p *Parser) array() (*Array, error) {
 		if err := p.next(); err != nil {
 			return nil, err
 		}
+	}
+	// skip newlines
+	if err := p.newlines(); err != nil {
+		return nil, err
 	}
 	if err := p.expect(token.RBRACKET); err != nil {
 		return nil, err
