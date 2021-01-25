@@ -2,21 +2,13 @@
   "block": [
     {
       "array": [
-        [
-          1,
-          false,
-          "foo"
-        ]
+        1,
+        false,
+        "foo"
       ],
-      "bool": [
-        true
-      ],
-      "number": [
-        42
-      ],
-      "string": [
-        "hello world"
-      ]
+      "bool": true,
+      "number": 42,
+      "string": "hello world"
     }
   ]
 }

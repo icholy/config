@@ -21,9 +21,18 @@ func (Block) value() {}
 
 // MarshalJSON implements json.Marshaler
 func (b *Block) MarshalJSON() ([]byte, error) {
-	m := map[string][]Value{}
+	m := map[string]interface{}{}
 	for _, e := range b.Entries {
-		m[e.Name.Value] = append(m[e.Name.Value], e.Value)
+		name := e.Name.Value
+		if b0, ok := e.Value.(*Block); ok {
+			if blocks, ok := m[name].([]Value); ok {
+				m[name] = append(blocks, b0)
+			} else {
+				m[name] = []Value{b0}
+			}
+		} else {
+			m[name] = e.Value
+		}
 	}
 	return json.Marshal(m)
 }
