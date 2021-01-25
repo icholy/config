@@ -17,6 +17,11 @@ func TestSnip(t *testing.T) {
 			end:    Pos{0, 1, 1},
 			output: "empty.output",
 		},
+		{
+			start:  Pos{0, 1, 1},
+			end:    Pos{109, 11, 15},
+			output: "full.output",
+		},
 	}
 	input := golden.Get(t, filepath.FromSlash("snippet/source.conf"))
 	for _, tt := range tests {
