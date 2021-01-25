@@ -7,7 +7,9 @@ import (
 )
 
 // Value ...
-type Value interface{ value() }
+type Value interface {
+	value()
+}
 
 // Block is a collection of entries
 type Block struct {
@@ -19,7 +21,11 @@ func (Block) value() {}
 
 // MarshalJSON implements json.Marshaler
 func (b *Block) MarshalJSON() ([]byte, error) {
-	return json.Marshal(b.Entries)
+	m := map[string][]Value{}
+	for _, e := range b.Entries {
+		m[e.Name.Value] = append(m[e.Name.Value], e.Value)
+	}
+	return json.Marshal(m)
 }
 
 // Ident ...

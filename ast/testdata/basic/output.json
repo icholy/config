@@ -1,27 +1,22 @@
-[
-  {
-    "Name": "block",
-    "Value": [
-      {
-        "Name": "number",
-        "Value": 42
-      },
-      {
-        "Name": "bool",
-        "Value": true
-      },
-      {
-        "Name": "string",
-        "Value": "hello world"
-      },
-      {
-        "Name": "array",
-        "Value": [
+{
+  "block": [
+    {
+      "array": [
+        [
           1,
           false,
           "foo"
         ]
-      }
-    ]
-  }
-]
+      ],
+      "bool": [
+        true
+      ],
+      "number": [
+        42
+      ],
+      "string": [
+        "hello world"
+      ]
+    }
+  ]
+}
