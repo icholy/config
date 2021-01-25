@@ -33,9 +33,11 @@ func (s Snippet) String() string {
 	return b.String()
 }
 
+// Snip returns a snippet between start and end
 func Snip(input string, start, end Pos) Snippet {
 	var lines []string
-	sc := bufio.NewScanner(strings.NewReader(input[start.Offset:end.Offset]))
+	input = string([]rune(input)[start.Offset:end.Offset])
+	sc := bufio.NewScanner(strings.NewReader(input))
 	for sc.Scan() {
 		lines = append(lines, sc.Text())
 	}
