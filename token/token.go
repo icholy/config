@@ -59,15 +59,6 @@ func (t Type) String() string {
 	}
 }
 
-// Pos is the position inside the file
-type Pos struct {
-	Line, Column, Offset int
-}
-
-func (p Pos) String() string {
-	return fmt.Sprintf("%d:%d", p.Line, p.Column)
-}
-
 // Token contains a token's type and text
 type Token struct {
 	Start Pos
