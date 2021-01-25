@@ -1,10 +1,13 @@
 package ast
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/sanity-io/litter"
 	"gotest.tools/v3/assert"
+	"gotest.tools/v3/golden"
 
 	"github.com/icholy/config/token"
 )
@@ -185,6 +188,23 @@ func TestParse(t *testing.T) {
 			block, err := Parse(tt.input)
 			assert.NilError(t, err)
 			assert.DeepEqual(t, tt.expect, block, cmpopts.IgnoreTypes(token.Pos{}))
+		})
+	}
+}
+
+func TestParseGolden(t *testing.T) {
+	tests := []struct {
+		name string
+		dir  string
+		err  string
+	}{}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := golden.Get(t, filepath.Join(tt.dir, "input.conf"))
+			block, err := Parse(string(data))
+			assert.NilError(t, err)
+			actual := litter.Sdump(block)
+			golden.Assert(t, actual, filepath.Join(tt.dir, "output.ast"))
 		})
 	}
 }
