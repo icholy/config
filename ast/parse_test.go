@@ -1,11 +1,11 @@
 package ast
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/sanity-io/litter"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/golden"
 
@@ -203,8 +203,9 @@ func TestParseGolden(t *testing.T) {
 			data := golden.Get(t, filepath.Join(tt.name, "input.conf"))
 			block, err := Parse(string(data))
 			assert.NilError(t, err)
-			actual := litter.Sdump(block)
-			golden.Assert(t, actual, filepath.Join(tt.name, "output.ast"))
+			actual, err := json.MarshalIndent(block, "", "  ")
+			assert.NilError(t, err)
+			golden.Assert(t, string(actual), filepath.Join(tt.name, "output.json"))
 		})
 	}
 }

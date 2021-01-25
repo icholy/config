@@ -1,0 +1,27 @@
+[
+  {
+    "Name": "block",
+    "Value": [
+      {
+        "Name": "number",
+        "Value": 42
+      },
+      {
+        "Name": "bool",
+        "Value": true
+      },
+      {
+        "Name": "string",
+        "Value": "hello world"
+      },
+      {
+        "Name": "array",
+        "Value": [
+          1,
+          false,
+          "foo"
+        ]
+      }
+    ]
+  }
+]
