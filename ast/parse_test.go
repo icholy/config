@@ -156,6 +156,29 @@ func TestParse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:  "BlockWithNewlines",
+			input: "block {\nfoo = 1\nbar = 2\n}",
+			expect: &Block{
+				Entries: []*Entry{
+					{
+						Name: &Ident{Value: "block"},
+						Value: &Block{
+							Entries: []*Entry{
+								{
+									Name:  &Ident{Value: "foo"},
+									Value: &Number{Value: 1},
+								},
+								{
+									Name:  &Ident{Value: "bar"},
+									Value: &Number{Value: 2},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

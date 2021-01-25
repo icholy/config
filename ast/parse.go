@@ -163,6 +163,9 @@ func (p *Parser) block() (*Block, error) {
 		return nil, err
 	}
 	b.Entries = ee
+	if err := p.newlines(); err != nil {
+		return nil, err
+	}
 	if err := p.expect(token.RBRACE); err != nil {
 		return nil, err
 	}
@@ -194,8 +197,17 @@ func (p *Parser) value() (Value, error) {
 }
 
 func (p *Parser) entries() ([]*Entry, error) {
+	if err := p.newlines(); err != nil {
+		return nil, err
+	}
 	var ee []*Entry
-	for p.tok.Type == token.IDENT {
+	for {
+		if err := p.newlines(); err != nil {
+			return nil, err
+		}
+		if p.tok.Type != token.IDENT {
+			break
+		}
 		e, err := p.entry()
 		if err != nil {
 			return nil, err
