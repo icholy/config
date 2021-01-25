@@ -13,13 +13,8 @@ func TestSnip(t *testing.T) {
 		output     string
 	}{
 		{
-			start:  Pos{0, 1, 1},
-			end:    Pos{0, 1, 1},
-			output: "empty.output",
-		},
-		{
-			start:  Pos{0, 1, 1},
-			end:    Pos{109, 11, 15},
+			start:  Pos{1, 1, 0},
+			end:    Pos{11, 15, 119},
 			output: "full.output",
 		},
 	}

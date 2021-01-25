@@ -28,7 +28,7 @@ func (s Snippet) String() string {
 		b.WriteRune(' ')
 	}
 	for i, line := range s.Lines {
-		fmt.Fprintf(&b, "%02d: %s", s.Start.Line+i, line)
+		fmt.Fprintf(&b, "%02d: %s\n", s.Start.Line+i, line)
 	}
 	return b.String()
 }
