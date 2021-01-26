@@ -21,10 +21,12 @@ func NewParser(lex *token.Lexer) *Parser {
 	}
 }
 
+// next reads the next token from the lexer
 func (p *Parser) next() {
 	p.tok = p.lex.Next()
 }
 
+// expect returns an error if the current token's type doesn't match t
 func (p *Parser) expect(t token.Type) error {
 	if p.tok.Type != t {
 		return fmt.Errorf("unexpected token: %v", p.tok)
@@ -47,6 +49,7 @@ func (p *Parser) assert(t token.Type) {
 	}
 }
 
+// parse is the entry point. It parses implicit top-level block.
 func (p *Parser) parse() (*Block, error) {
 	b := &Block{
 		Start:   token.Pos{Line: 1, Column: 1, Offset: 0},
@@ -63,6 +66,7 @@ func (p *Parser) parse() (*Block, error) {
 	return b, nil
 }
 
+// number parses a Number
 func (p *Parser) number() (*Number, error) {
 	p.assert(token.NUMBER)
 	v, err := strconv.ParseFloat(p.tok.Text, 64)
@@ -77,6 +81,7 @@ func (p *Parser) number() (*Number, error) {
 	return n, nil
 }
 
+// string parses a String
 func (p *Parser) string() (*String, error) {
 	p.assert(token.STRING)
 	s := &String{
@@ -87,6 +92,7 @@ func (p *Parser) string() (*String, error) {
 	return s, nil
 }
 
+// bool parses a Bool
 func (p *Parser) bool() (*Bool, error) {
 	p.assert(token.IDENT)
 	b := &Bool{
@@ -103,6 +109,7 @@ func (p *Parser) bool() (*Bool, error) {
 	return b, nil
 }
 
+// list parses a List
 func (p *Parser) list() (*List, error) {
 	p.assert(token.LBRACKET)
 	l := &List{
@@ -140,6 +147,7 @@ func (p *Parser) list() (*List, error) {
 	return l, nil
 }
 
+// block parses a Block
 func (p *Parser) block() (*Block, error) {
 	p.assert(token.LBRACE)
 	b := &Block{
@@ -159,6 +167,7 @@ func (p *Parser) block() (*Block, error) {
 	return b, nil
 }
 
+// ident parses an Ident
 func (p *Parser) ident() (*Ident, error) {
 	p.assert(token.IDENT)
 	id := &Ident{
@@ -169,6 +178,7 @@ func (p *Parser) ident() (*Ident, error) {
 	return id, nil
 }
 
+// value parses a value
 func (p *Parser) value() (Value, error) {
 	switch p.tok.Type {
 	case token.NUMBER:
@@ -184,6 +194,7 @@ func (p *Parser) value() (Value, error) {
 	}
 }
 
+// entries parses a sequence of Entry nodes
 func (p *Parser) entries() ([]*Entry, error) {
 	var ee []*Entry
 	for {
@@ -200,6 +211,7 @@ func (p *Parser) entries() ([]*Entry, error) {
 	return ee, nil
 }
 
+// entry parses an Entry
 func (p *Parser) entry() (*Entry, error) {
 	e := &Entry{
 		Start: p.tok.Start,
