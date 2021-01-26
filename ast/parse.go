@@ -21,9 +21,8 @@ func NewParser(lex *token.Lexer) *Parser {
 	}
 }
 
-func (p *Parser) next() error {
+func (p *Parser) next() {
 	p.tok = p.lex.Next()
-	return nil
 }
 
 func (p *Parser) expect(t token.Type) error {
@@ -34,13 +33,10 @@ func (p *Parser) expect(t token.Type) error {
 }
 
 // newline skips newline tokens
-func (p *Parser) newlines() error {
+func (p *Parser) newlines() {
 	for p.tok.Type == token.NEWLINE {
-		if err := p.next(); err != nil {
-			return err
-		}
+		p.next()
 	}
-	return nil
 }
 
 // assert panics if the current token type doesn't match t.
@@ -77,7 +73,8 @@ func (p *Parser) number() (*Number, error) {
 		Start: p.tok.Start,
 		Value: v,
 	}
-	return n, p.next()
+	p.next()
+	return n, nil
 }
 
 func (p *Parser) string() (*String, error) {
@@ -86,7 +83,8 @@ func (p *Parser) string() (*String, error) {
 		Start: p.tok.Start,
 		Value: p.tok.Text,
 	}
-	return s, p.next()
+	p.next()
+	return s, nil
 }
 
 func (p *Parser) bool() (*Bool, error) {
@@ -101,7 +99,8 @@ func (p *Parser) bool() (*Bool, error) {
 	default:
 		return nil, fmt.Errorf("unexpected token: %s", p.tok)
 	}
-	return b, p.next()
+	p.next()
+	return b, nil
 }
 
 func (p *Parser) list() (*List, error) {
@@ -110,14 +109,10 @@ func (p *Parser) list() (*List, error) {
 		Start: p.tok.Start,
 	}
 	// read left bracket
-	if err := p.next(); err != nil {
-		return nil, err
-	}
+	p.next()
 	for {
 		// skip newlines
-		if err := p.newlines(); err != nil {
-			return nil, err
-		}
+		p.newlines()
 		// found right bracket, we're done
 		if p.tok.Type == token.RBRACKET {
 			break
@@ -129,25 +124,20 @@ func (p *Parser) list() (*List, error) {
 		}
 		l.Values = append(l.Values, v)
 		// skip newlines
-		if err := p.newlines(); err != nil {
-			return nil, err
-		}
+		p.newlines()
 		// if there's no comma, we're done
 		if p.tok.Type != token.COMMA {
 			break
 		}
-		if err := p.next(); err != nil {
-			return nil, err
-		}
+		p.next()
 	}
 	// skip newlines
-	if err := p.newlines(); err != nil {
-		return nil, err
-	}
+	p.newlines()
 	if err := p.expect(token.RBRACKET); err != nil {
 		return nil, err
 	}
-	return l, p.next()
+	p.next()
+	return l, nil
 }
 
 func (p *Parser) block() (*Block, error) {
@@ -155,21 +145,18 @@ func (p *Parser) block() (*Block, error) {
 	b := &Block{
 		Start: p.tok.Start,
 	}
-	if err := p.next(); err != nil {
-		return nil, err
-	}
+	p.next()
 	ee, err := p.entries()
 	if err != nil {
 		return nil, err
 	}
 	b.Entries = ee
-	if err := p.newlines(); err != nil {
-		return nil, err
-	}
+	p.newlines()
 	if err := p.expect(token.RBRACE); err != nil {
 		return nil, err
 	}
-	return b, p.next()
+	p.next()
+	return b, nil
 }
 
 func (p *Parser) ident() (*Ident, error) {
@@ -178,7 +165,8 @@ func (p *Parser) ident() (*Ident, error) {
 		Start: p.tok.Start,
 		Value: p.tok.Text,
 	}
-	return id, p.next()
+	p.next()
+	return id, nil
 }
 
 func (p *Parser) value() (Value, error) {
@@ -197,14 +185,10 @@ func (p *Parser) value() (Value, error) {
 }
 
 func (p *Parser) entries() ([]*Entry, error) {
-	if err := p.newlines(); err != nil {
-		return nil, err
-	}
+	p.newlines()
 	var ee []*Entry
 	for {
-		if err := p.newlines(); err != nil {
-			return nil, err
-		}
+		p.newlines()
 		if p.tok.Type != token.IDENT {
 			break
 		}
@@ -230,9 +214,7 @@ func (p *Parser) entry() (*Entry, error) {
 	switch p.tok.Type {
 	case token.ASSIGN:
 		// skip assign operator
-		if err := p.next(); err != nil {
-			return nil, err
-		}
+		p.next()
 		// read value
 		e.Value, err = p.value()
 		if err != nil {
