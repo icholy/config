@@ -22,6 +22,11 @@ func TestSnip(t *testing.T) {
 			end:    Pos{11, 15, 119},
 			output: "full.output",
 		},
+		{
+			start:  Pos{3, 10, 19},
+			end:    Pos{3, 19, 24},
+			output: "partline.output",
+		},
 	}
 	input := golden.Get(t, filepath.FromSlash("snippet/source.conf"))
 	for _, tt := range tests {

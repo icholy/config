@@ -24,11 +24,12 @@ type Span struct {
 
 func (s Span) String() string {
 	var b strings.Builder
-	for i := 0; i < s.Start.Column-1; i++ {
-		b.WriteRune(' ')
-	}
 	for i, line := range s.Lines {
-		fmt.Fprintf(&b, "%05d: %s\n", s.Start.Line+i, line)
+		var padding string
+		if i == 0 {
+			padding = strings.Repeat(" ", s.Start.Column-1)
+		}
+		fmt.Fprintf(&b, "%05d: %s%s\n", s.Start.Line+i, padding, line)
 	}
 	return b.String()
 }
