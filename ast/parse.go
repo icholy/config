@@ -185,7 +185,6 @@ func (p *Parser) value() (Value, error) {
 }
 
 func (p *Parser) entries() ([]*Entry, error) {
-	p.newlines()
 	var ee []*Entry
 	for {
 		p.newlines()
