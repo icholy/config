@@ -1,4 +1,4 @@
-# Config Format
+# WIP - Config Format
 
 > This package implements an unmarshaler for a simplified version of the HCL configuration language. The main difference is that block tags are not supported.
 
