@@ -7,6 +7,17 @@ import (
 	"github.com/icholy/config/token"
 )
 
+// ParseError contains the position and incorrect token
+// encountered when parsing
+type ParseError struct {
+	Token token.Token
+}
+
+// Error implements the error interface
+func (p ParseError) Error() string {
+	return fmt.Sprintf("%s: unexpected token %s", p.Token.Start, p.Token)
+}
+
 // Parser for the configuration language
 type Parser struct {
 	lex *token.Lexer
@@ -29,7 +40,7 @@ func (p *Parser) next() {
 // expect returns an error if the current token's type doesn't match t
 func (p *Parser) expect(t token.Type) error {
 	if p.tok.Type != t {
-		return fmt.Errorf("unexpected token: %v", p.tok)
+		return &ParseError{Token: p.tok}
 	}
 	return nil
 }
@@ -103,7 +114,7 @@ func (p *Parser) bool() (*Bool, error) {
 	case "true":
 		b.Value = true
 	default:
-		return nil, fmt.Errorf("unexpected token: %s", p.tok)
+		return nil, &ParseError{Token: p.tok}
 	}
 	p.next()
 	return b, nil
@@ -190,7 +201,7 @@ func (p *Parser) value() (Value, error) {
 	case token.LBRACKET:
 		return p.list()
 	default:
-		return nil, fmt.Errorf("unexpected token: %s", p.tok)
+		return nil, &ParseError{Token: p.tok}
 	}
 }
 
@@ -238,7 +249,7 @@ func (p *Parser) entry() (*Entry, error) {
 			return nil, err
 		}
 	default:
-		return nil, fmt.Errorf("unexpected token: %s", p.tok)
+		return nil, &ParseError{Token: p.tok}
 	}
 	return e, nil
 }
