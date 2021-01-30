@@ -7,6 +7,7 @@
 * No tag blocks.
 * No variables.
 * Support for `encoding.TextMarshaler` & `encoding.TextUnmarshaler`.
+* Allow registering custom encoder/decoder functions for arbitrary types.
 * Improved error messages.
 
 ### Example:
@@ -40,7 +41,7 @@ type Service struct {
 	Name    string
 	Addr    string
 	Deny    []string
-	Metrics *Metrics
+	Metrics *Metrics // unmarshal will error if there is more than 1 Metrics block
 }
 
 type Config struct {
