@@ -1,6 +1,13 @@
 # WIP - Config Format
 
-> This package implements an unmarshaler for a simplified version of the HCL configuration language. The main difference is that block tags are not supported.
+> This package implements an unmarshaler for a simplified version of the HCL configuration language.
+
+### Goals & Differences to HCL.
+
+* No tag blocks.
+* No variables.
+* Support for `encoding.TextMarshaler` & `encoding.TextUnmarshaler`.
+* Improved error messages.
 
 ### Example:
 ```
