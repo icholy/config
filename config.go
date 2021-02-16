@@ -24,23 +24,13 @@ func byName(ee []*ast.Entry) map[string][]*ast.Entry {
 	return groups
 }
 
-func decodeEntry(e *ast.Entry, dst reflect.Value, typ reflect.Type, multi bool) (reflect.Value, error) {
-	if !dst.IsValid() {
-		dst = reflect.New(typ).Elem()
-	}
-	if err := decodeValue(e.Value, dst, multi); err != nil {
-		return reflect.Value{}, err
-	}
-	return dst, nil
-}
-
 func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 	dst = realise(dst)
 	switch dst.Kind() {
 	case reflect.Interface:
 		if dst.IsNil() {
-			m := map[string]interface{}{}
-			dst.Set(reflect.ValueOf(m))
+			s := []map[string]interface{}{}
+			dst.Set(reflect.ValueOf(s))
 		}
 		return decodeBlock(b, dst.Elem(), multi)
 	case reflect.Map:
@@ -50,11 +40,15 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 		for name, entries := range byName(b.Entries) {
 			for _, e := range entries {
 				key := reflect.ValueOf(name)
-				val, err := decodeEntry(e, dst.MapIndex(key), dst.Type().Elem(), len(entries) > 1)
-				if err != nil {
+				val := dst.MapIndex(key)
+				ptr := reflect.New(dst.Type().Elem())
+				if val.IsValid() {
+					ptr.Elem().Set(val)
+				}
+				if err := decodeValue(e.Value, ptr.Elem(), len(entries) > 1); err != nil {
 					return err
 				}
-				dst.SetMapIndex(key, val)
+				dst.SetMapIndex(key, ptr.Elem())
 			}
 		}
 		return nil
@@ -69,11 +63,9 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 					return fmt.Errorf("anonymous fields are not supported: %q", name)
 				}
 				idx := field.Index[0]
-				val, err := decodeEntry(e, dst.Field(idx), field.Type, len(entries) > 1)
-				if err != nil {
+				if err := decodeValue(e.Value, dst.Field(idx), len(entries) > 1); err != nil {
 					return err
 				}
-				dst.Field(idx).Set(val)
 			}
 		}
 		return nil
