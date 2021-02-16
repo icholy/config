@@ -38,31 +38,32 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 			dst.Set(reflect.MakeMap(dst.Type()))
 		}
 		for name, entries := range byName(b.Entries) {
+			key := reflect.ValueOf(name)
+			val := dst.MapIndex(key)
+			ptr := reflect.New(dst.Type().Elem())
+			if val.IsValid() {
+				ptr.Elem().Set(val)
+			}
 			for _, e := range entries {
-				key := reflect.ValueOf(name)
-				val := dst.MapIndex(key)
-				ptr := reflect.New(dst.Type().Elem())
-				if val.IsValid() {
-					ptr.Elem().Set(val)
-				}
 				if err := decodeValue(e.Value, ptr.Elem(), len(entries) > 1); err != nil {
 					return err
 				}
-				dst.SetMapIndex(key, ptr.Elem())
 			}
+			dst.SetMapIndex(key, ptr.Elem())
+
 		}
 		return nil
 	case reflect.Struct:
 		for name, entries := range byName(b.Entries) {
+			field, ok := dst.Type().FieldByName(name)
+			if !ok {
+				return fmt.Errorf("no matching field: %q", name)
+			}
+			if field.Anonymous {
+				return fmt.Errorf("anonymous fields are not supported: %q", name)
+			}
+			idx := field.Index[0]
 			for _, e := range entries {
-				field, ok := dst.Type().FieldByName(name)
-				if !ok {
-					return fmt.Errorf("no matching field: %q", name)
-				}
-				if field.Anonymous {
-					return fmt.Errorf("anonymous fields are not supported: %q", name)
-				}
-				idx := field.Index[0]
 				if err := decodeValue(e.Value, dst.Field(idx), len(entries) > 1); err != nil {
 					return err
 				}
