@@ -13,7 +13,7 @@ func Unmarshal(data []byte, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	return decodeValue(block, reflect.ValueOf(v))
+	return decodeValue(block, reflect.ValueOf(v), false)
 }
 
 func byName(ee []*ast.Entry) map[string][]*ast.Entry {
@@ -28,41 +28,41 @@ func decodeEntry(e *ast.Entry, dst reflect.Value, typ reflect.Type, multi bool) 
 	if !dst.IsValid() {
 		dst = reflect.New(typ).Elem()
 	}
-	if err := decodeValue(e.Value, dst); err != nil {
+	if err := decodeValue(e.Value, dst, multi); err != nil {
 		return reflect.Value{}, err
 	}
 	return dst, nil
 }
 
-func decodeBlock(b *ast.Block, dst reflect.Value) error {
+func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 	switch dst.Kind() {
 	case reflect.Interface:
 		if dst.IsNil() {
 			m := map[string]interface{}{}
 			dst.Set(reflect.ValueOf(m))
 		}
-		return decodeValue(b, dst.Elem())
+		return decodeValue(b, dst.Elem(), multi)
 	case reflect.Map:
-		return decodeBlockToMap(b, dst)
+		return decodeBlockToMap(b, dst, multi)
 	case reflect.Struct:
-		return decodeBlockToStruct(b, dst)
+		return decodeBlockToStruct(b, dst, multi)
 	case reflect.Slice:
-		return decodeBlockToSlice(b, dst)
+		return decodeBlockToSlice(b, dst, multi)
 	default:
 		return fmt.Errorf("cannot decode block to: %v", dst.Type())
 	}
 }
 
-func decodeBlockToSlice(b *ast.Block, dst reflect.Value) error {
+func decodeBlockToSlice(b *ast.Block, dst reflect.Value, multi bool) error {
 	elem := reflect.New(dst.Type().Elem()).Elem()
-	if err := decodeValue(b, elem); err != nil {
+	if err := decodeValue(b, elem, multi); err != nil {
 		return err
 	}
 	dst.Set(reflect.Append(dst, elem))
 	return nil
 }
 
-func decodeBlockToMap(b *ast.Block, dst reflect.Value) error {
+func decodeBlockToMap(b *ast.Block, dst reflect.Value, multi bool) error {
 	if dst.IsNil() {
 		dst.Set(reflect.MakeMap(dst.Type()))
 	}
@@ -79,7 +79,7 @@ func decodeBlockToMap(b *ast.Block, dst reflect.Value) error {
 	return nil
 }
 
-func decodeBlockToStruct(b *ast.Block, dst reflect.Value) error {
+func decodeBlockToStruct(b *ast.Block, dst reflect.Value, multi bool) error {
 	for name, entries := range byName(b.Entries) {
 		for _, e := range entries {
 			field, ok := dst.Type().FieldByName(name)
@@ -100,18 +100,18 @@ func decodeBlockToStruct(b *ast.Block, dst reflect.Value) error {
 	return nil
 }
 
-func decodeList(l *ast.List, dst reflect.Value) error {
+func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
 	switch dst.Kind() {
 	case reflect.Interface:
 		if dst.IsNil() {
 			s := []interface{}{}
 			dst.Set(reflect.ValueOf(s))
 		}
-		return decodeValue(l, dst.Elem())
+		return decodeValue(l, dst.Elem(), multi)
 	case reflect.Slice:
 		for _, v := range l.Values {
 			elem := reflect.New(dst.Type().Elem()).Elem()
-			if err := decodeValue(v, elem); err != nil {
+			if err := decodeValue(v, elem, multi); err != nil {
 				return err
 			}
 			dst.Set(reflect.Append(dst, elem))
@@ -122,7 +122,7 @@ func decodeList(l *ast.List, dst reflect.Value) error {
 	}
 }
 
-func decodePrimitive(primitive interface{}, dst reflect.Value) error {
+func decodePrimitive(primitive interface{}, dst reflect.Value, multi bool) error {
 	v := reflect.ValueOf(primitive)
 	if v.Type().ConvertibleTo(dst.Type()) {
 		v = v.Convert(dst.Type())
@@ -134,7 +134,7 @@ func decodePrimitive(primitive interface{}, dst reflect.Value) error {
 	return nil
 }
 
-func decodeValue(v ast.Value, dst reflect.Value) error {
+func decodeValue(v ast.Value, dst reflect.Value, multi bool) error {
 	for dst.Kind() == reflect.Ptr {
 		if dst.IsNil() {
 			dst.Set(reflect.New(dst.Type().Elem()))
@@ -143,15 +143,15 @@ func decodeValue(v ast.Value, dst reflect.Value) error {
 	}
 	switch v := v.(type) {
 	case *ast.Block:
-		return decodeBlock(v, dst)
+		return decodeBlock(v, dst, multi)
 	case *ast.List:
-		return decodeList(v, dst)
+		return decodeList(v, dst, multi)
 	case *ast.Number:
-		return decodePrimitive(v.Value, dst)
+		return decodePrimitive(v.Value, dst, multi)
 	case *ast.String:
-		return decodePrimitive(v.Value, dst)
+		return decodePrimitive(v.Value, dst, multi)
 	case *ast.Bool:
-		return decodePrimitive(v.Value, dst)
+		return decodePrimitive(v.Value, dst, multi)
 	default:
 		return fmt.Errorf("not implemented: %T", v)
 	}
