@@ -7,6 +7,16 @@ import (
 )
 
 func TestUnmarshal(t *testing.T) {
+
+	type Foo struct {
+		A float64
+		B string
+		C bool
+	}
+	type Bar struct {
+		Foo *Foo
+	}
+
 	tests := []struct {
 		name  string
 		input string
@@ -33,17 +43,10 @@ func TestUnmarshal(t *testing.T) {
 			name:  "FlatBlockToStruct",
 			input: "A=123\nB=\"hello\"",
 			dst: func() interface{} {
-				var dst struct {
-					A float64
-					B string
-				}
-				return &dst
+				return &Foo{}
 			},
 			want: func() interface{} {
-				return &struct {
-					A float64
-					B string
-				}{A: 123, B: "hello"}
+				return &Foo{A: 123, B: "hello"}
 			},
 		},
 		{
@@ -58,6 +61,18 @@ func TestUnmarshal(t *testing.T) {
 					"a": true,
 				}
 				return &m
+			},
+		},
+		{
+			name:  "NilStruct",
+			input: "Foo { A=123\nC=false }",
+			dst: func() interface{} {
+				return &Bar{}
+			},
+			want: func() interface{} {
+				return &Bar{
+					Foo: &Foo{A: 123, C: false},
+				}
 			},
 		},
 	}

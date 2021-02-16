@@ -23,7 +23,7 @@ func decodeBlock(b *ast.Block, dst reflect.Value) error {
 	case reflect.Struct:
 		return decodeBlockToStruct(b, dst)
 	default:
-		return fmt.Errorf("cannot decode block to: %T", dst)
+		return fmt.Errorf("cannot decode block to: %v", dst)
 	}
 }
 
@@ -75,6 +75,9 @@ func decodeBool(b *ast.Bool, dst reflect.Value) error {
 
 func decodeValue(v ast.Value, dst reflect.Value) error {
 	for dst.Kind() == reflect.Ptr {
+		if dst.IsNil() {
+			dst.Set(reflect.New(dst.Type().Elem()))
+		}
 		dst = reflect.Indirect(dst)
 	}
 	switch v := v.(type) {
