@@ -44,61 +44,49 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 		}
 		return decodeBlock(b, dst.Elem(), multi)
 	case reflect.Map:
-		return decodeBlockToMap(b, dst, multi)
+		if dst.IsNil() {
+			dst.Set(reflect.MakeMap(dst.Type()))
+		}
+		for name, entries := range byName(b.Entries) {
+			for _, e := range entries {
+				key := reflect.ValueOf(name)
+				val, err := decodeEntry(e, dst.MapIndex(key), dst.Type().Elem(), len(entries) > 1)
+				if err != nil {
+					return err
+				}
+				dst.SetMapIndex(key, val)
+			}
+		}
+		return nil
 	case reflect.Struct:
-		return decodeBlockToStruct(b, dst, multi)
+		for name, entries := range byName(b.Entries) {
+			for _, e := range entries {
+				field, ok := dst.Type().FieldByName(name)
+				if !ok {
+					return fmt.Errorf("no matching field: %q", name)
+				}
+				if field.Anonymous {
+					return fmt.Errorf("anonymous fields are not supported: %q", name)
+				}
+				idx := field.Index[0]
+				val, err := decodeEntry(e, dst.Field(idx), field.Type, len(entries) > 1)
+				if err != nil {
+					return err
+				}
+				dst.Field(idx).Set(val)
+			}
+		}
+		return nil
 	case reflect.Slice:
-		return decodeBlockToSlice(b, dst, multi)
+		elem := reflect.New(dst.Type().Elem()).Elem()
+		if err := decodeValue(b, elem, multi); err != nil {
+			return err
+		}
+		dst.Set(reflect.Append(dst, elem))
+		return nil
 	default:
 		return fmt.Errorf("cannot decode block to: %v", dst.Type())
 	}
-}
-
-func decodeBlockToSlice(b *ast.Block, dst reflect.Value, multi bool) error {
-	elem := reflect.New(dst.Type().Elem()).Elem()
-	if err := decodeValue(b, elem, multi); err != nil {
-		return err
-	}
-	dst.Set(reflect.Append(dst, elem))
-	return nil
-}
-
-func decodeBlockToMap(b *ast.Block, dst reflect.Value, multi bool) error {
-	if dst.IsNil() {
-		dst.Set(reflect.MakeMap(dst.Type()))
-	}
-	for name, entries := range byName(b.Entries) {
-		for _, e := range entries {
-			key := reflect.ValueOf(name)
-			val, err := decodeEntry(e, dst.MapIndex(key), dst.Type().Elem(), len(entries) > 1)
-			if err != nil {
-				return err
-			}
-			dst.SetMapIndex(key, val)
-		}
-	}
-	return nil
-}
-
-func decodeBlockToStruct(b *ast.Block, dst reflect.Value, multi bool) error {
-	for name, entries := range byName(b.Entries) {
-		for _, e := range entries {
-			field, ok := dst.Type().FieldByName(name)
-			if !ok {
-				return fmt.Errorf("no matching field: %q", name)
-			}
-			if field.Anonymous {
-				return fmt.Errorf("anonymous fields are not supported: %q", name)
-			}
-			idx := field.Index[0]
-			val, err := decodeEntry(e, dst.Field(idx), field.Type, len(entries) > 1)
-			if err != nil {
-				return err
-			}
-			dst.Field(idx).Set(val)
-		}
-	}
-	return nil
 }
 
 func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
