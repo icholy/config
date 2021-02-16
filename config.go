@@ -29,8 +29,20 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 	switch dst.Kind() {
 	case reflect.Interface:
 		if dst.IsNil() {
-			s := []map[string]interface{}{}
-			dst.Set(reflect.ValueOf(s))
+			if multi {
+				s := []map[string]interface{}{}
+				if err := decodeBlock(b, reflect.ValueOf(&s), multi); err != nil {
+					return err
+				}
+				dst.Set(reflect.ValueOf(s))
+			} else {
+				m := reflect.ValueOf(map[string]interface{}{})
+				if err := decodeBlock(b, m, true); err != nil {
+					return err
+				}
+				dst.Set(m)
+			}
+			return nil
 		}
 		return decodeBlock(b, dst.Elem(), multi)
 	case reflect.Map:

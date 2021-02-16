@@ -125,7 +125,6 @@ func TestUnmarshal(t *testing.T) {
 				}
 				return &v
 			},
-			skip: true,
 		},
 		{
 			name:  "ConvertableTypes",
@@ -173,6 +172,24 @@ func TestUnmarshal(t *testing.T) {
 					},
 				}
 			},
+		},
+		{
+			name:  "MultiBlockKeyMap",
+			input: "Foo { A = 123 } Foo { A = 321 }",
+			dst: func() interface{} {
+				var v interface{}
+				return &v
+			},
+			want: func() interface{} {
+				var v interface{} = map[string]interface{}{
+					"Foo": []map[string]interface{}{
+						{"A": 123},
+						{"A": 321},
+					},
+				}
+				return &v
+			},
+			skip: true,
 		},
 	}
 	for _, tt := range tests {
