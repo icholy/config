@@ -28,9 +28,20 @@ func decodeBlock(b *ast.Block, dst reflect.Value) error {
 		return decodeBlockToMap(b, dst)
 	case reflect.Struct:
 		return decodeBlockToStruct(b, dst)
+	case reflect.Slice:
+		return decodeBlockToSlice(b, dst)
 	default:
 		return fmt.Errorf("cannot decode block to: %v", dst.Type())
 	}
+}
+
+func decodeBlockToSlice(b *ast.Block, dst reflect.Value) error {
+	elem := reflect.New(dst.Type().Elem()).Elem()
+	if err := decodeValue(b, elem); err != nil {
+		return err
+	}
+	dst.Set(reflect.Append(dst, elem))
+	return nil
 }
 
 func decodeBlockToMap(b *ast.Block, dst reflect.Value) error {
@@ -77,15 +88,13 @@ func decodeList(l *ast.List, dst reflect.Value) error {
 		}
 		return decodeValue(l, dst.Elem())
 	case reflect.Slice:
-		slice := dst.Slice(0, 0)
 		for _, v := range l.Values {
-			elem := reflect.New(slice.Type().Elem()).Elem()
+			elem := reflect.New(dst.Type().Elem()).Elem()
 			if err := decodeValue(v, elem); err != nil {
 				return err
 			}
-			slice = reflect.Append(slice, elem)
+			dst.Set(reflect.Append(dst, elem))
 		}
-		dst.Set(slice)
 		return nil
 	default:
 		return fmt.Errorf("cannot decode block to: %v", dst.Type())

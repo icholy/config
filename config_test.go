@@ -29,6 +29,10 @@ func TestUnmarshal(t *testing.T) {
 		Items []interface{}
 	}
 
+	type MultiBlock struct {
+		Foo []*Foo
+	}
+
 	tests := []struct {
 		name  string
 		input string
@@ -149,6 +153,21 @@ func TestUnmarshal(t *testing.T) {
 						float64(2),
 						float64(3),
 						float64(4),
+					},
+				}
+			},
+		},
+		{
+			name:  "MultiBlockKey",
+			input: "Foo { A = 123 } Foo { A = 321 }",
+			dst: func() interface{} {
+				return &MultiBlock{}
+			},
+			want: func() interface{} {
+				return &MultiBlock{
+					Foo: []*Foo{
+						{A: 123},
+						{A: 321},
 					},
 				}
 			},
