@@ -68,18 +68,15 @@ func decodeBlockToStruct(b *ast.Block, dst reflect.Value) error {
 	return nil
 }
 
-func decodeNumber(n *ast.Number, dst reflect.Value) error {
-	dst.Set(reflect.ValueOf(n.Value))
-	return nil
-}
-
-func decodeString(s *ast.String, dst reflect.Value) error {
-	dst.Set(reflect.ValueOf(s.Value))
-	return nil
-}
-
-func decodeBool(b *ast.Bool, dst reflect.Value) error {
-	dst.Set(reflect.ValueOf(b.Value))
+func decodePrimitive(primitive interface{}, dst reflect.Value) error {
+	v := reflect.ValueOf(primitive)
+	if v.Type().ConvertibleTo(dst.Type()) {
+		v = v.Convert(dst.Type())
+	}
+	if !v.Type().AssignableTo(dst.Type()) {
+		return fmt.Errorf("cannot assign %v to %v", v.Type(), dst.Type())
+	}
+	dst.Set(v)
 	return nil
 }
 
@@ -94,11 +91,11 @@ func decodeValue(v ast.Value, dst reflect.Value) error {
 	case *ast.Block:
 		return decodeBlock(v, dst)
 	case *ast.Number:
-		return decodeNumber(v, dst)
+		return decodePrimitive(v.Value, dst)
 	case *ast.String:
-		return decodeString(v, dst)
+		return decodePrimitive(v.Value, dst)
 	case *ast.Bool:
-		return decodeBool(v, dst)
+		return decodePrimitive(v.Value, dst)
 	default:
 		return fmt.Errorf("not implemented: %T", v)
 	}
