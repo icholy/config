@@ -87,6 +87,7 @@ func (s *String) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.Value)
 }
 
+// List ...
 type List struct {
 	Start  token.Pos
 	Values []Value
