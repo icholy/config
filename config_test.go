@@ -14,6 +14,7 @@ func TestUnmarshal(t *testing.T) {
 		want  func() interface{}
 	}{
 		{
+			name:  "FlatBlockToMap",
 			input: "a=123\nb=42\nc=\"hello\"",
 			dst: func() interface{} {
 				m := map[string]interface{}{}
@@ -26,6 +27,23 @@ func TestUnmarshal(t *testing.T) {
 					"c": "hello",
 				}
 				return &m
+			},
+		},
+		{
+			name:  "FlatBlockToStruct",
+			input: "A=123\nB=\"hello\"",
+			dst: func() interface{} {
+				var dst struct {
+					A float64
+					B string
+				}
+				return &dst
+			},
+			want: func() interface{} {
+				return &struct {
+					A float64
+					B string
+				}{A: 123, B: "hello"}
 			},
 		},
 	}
