@@ -46,6 +46,20 @@ func TestUnmarshal(t *testing.T) {
 				}{A: 123, B: "hello"}
 			},
 		},
+		{
+			name:  "NilMap",
+			input: "a=true",
+			dst: func() interface{} {
+				var m map[string]interface{}
+				return &m
+			},
+			want: func() interface{} {
+				m := map[string]interface{}{
+					"a": true,
+				}
+				return &m
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -28,6 +28,9 @@ func decodeBlock(b *ast.Block, dst reflect.Value) error {
 }
 
 func decodeBlockToMap(b *ast.Block, dst reflect.Value) error {
+	if dst.IsNil() {
+		dst.Set(reflect.MakeMap(dst.Type()))
+	}
 	for _, e := range b.Entries {
 		elem := reflect.New(dst.Type().Elem()).Elem()
 		if err := decodeValue(e.Value, elem); err != nil {
@@ -65,6 +68,11 @@ func decodeString(s *ast.String, dst reflect.Value) error {
 	return nil
 }
 
+func decodeBool(b *ast.Bool, dst reflect.Value) error {
+	dst.Set(reflect.ValueOf(b.Value))
+	return nil
+}
+
 func decodeValue(v ast.Value, dst reflect.Value) error {
 	for dst.Kind() == reflect.Ptr {
 		dst = reflect.Indirect(dst)
@@ -76,6 +84,8 @@ func decodeValue(v ast.Value, dst reflect.Value) error {
 		return decodeNumber(v, dst)
 	case *ast.String:
 		return decodeString(v, dst)
+	case *ast.Bool:
+		return decodeBool(v, dst)
 	default:
 		return fmt.Errorf("not implemented: %T", v)
 	}
