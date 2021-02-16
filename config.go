@@ -18,12 +18,14 @@ func Unmarshal(data []byte, v interface{}) error {
 
 func decodeBlock(b *ast.Block, dst reflect.Value) error {
 	switch dst.Kind() {
+	case reflect.Interface:
+		if dst.IsNil() {
+			m := map[string]interface{}{}
+			dst.Set(reflect.ValueOf(m))
+		}
+		return decodeValue(b, dst.Elem())
 	case reflect.Map:
 		return decodeBlockToMap(b, dst)
-	case reflect.Interface:
-		m := map[string]interface{}{}
-		dst.Set(reflect.ValueOf(m))
-		return decodeBlockToMap(b, dst.Elem())
 	case reflect.Struct:
 		return decodeBlockToStruct(b, dst)
 	default:
