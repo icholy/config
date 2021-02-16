@@ -75,6 +75,22 @@ func TestUnmarshal(t *testing.T) {
 				}
 			},
 		},
+		{
+			name:  "ExistingKey",
+			input: "exists { A=123 }",
+			dst: func() interface{} {
+				m := map[string]interface{}{
+					"existing": &Foo{B: "test"},
+				}
+				return &m
+			},
+			want: func() interface{} {
+				m := map[string]interface{}{
+					"existing": &Foo{A: 123, B: "test"},
+				}
+				return &m
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
