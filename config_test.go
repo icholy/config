@@ -172,23 +172,6 @@ func TestUnmarshal(t *testing.T) {
 				}
 			},
 		},
-		{
-			name:  "MultiBlockMap",
-			input: "a { x = 1 } a { y = 2 }",
-			dst: func() interface{} {
-				var v interface{}
-				return &v
-			},
-			want: func() interface{} {
-				var m interface{} = map[string]interface{}{
-					"a": []interface{}{
-						map[string]interface{}{"x": float64(1)},
-						map[string]interface{}{"y": float64(2)},
-					},
-				}
-				return &m
-			},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

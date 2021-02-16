@@ -35,13 +35,14 @@ func decodeEntry(e *ast.Entry, dst reflect.Value, typ reflect.Type, multi bool) 
 }
 
 func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
+	dst = realise(dst)
 	switch dst.Kind() {
 	case reflect.Interface:
 		if dst.IsNil() {
 			m := map[string]interface{}{}
 			dst.Set(reflect.ValueOf(m))
 		}
-		return decodeValue(b, dst.Elem(), multi)
+		return decodeBlock(b, dst.Elem(), multi)
 	case reflect.Map:
 		return decodeBlockToMap(b, dst, multi)
 	case reflect.Struct:
@@ -101,6 +102,7 @@ func decodeBlockToStruct(b *ast.Block, dst reflect.Value, multi bool) error {
 }
 
 func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
+	dst = realise(dst)
 	switch dst.Kind() {
 	case reflect.Interface:
 		if dst.IsNil() {
@@ -123,6 +125,7 @@ func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
 }
 
 func decodePrimitive(primitive interface{}, dst reflect.Value, multi bool) error {
+	dst = realise(dst)
 	v := reflect.ValueOf(primitive)
 	if v.Type().ConvertibleTo(dst.Type()) {
 		v = v.Convert(dst.Type())
@@ -135,12 +138,6 @@ func decodePrimitive(primitive interface{}, dst reflect.Value, multi bool) error
 }
 
 func decodeValue(v ast.Value, dst reflect.Value, multi bool) error {
-	for dst.Kind() == reflect.Ptr {
-		if dst.IsNil() {
-			dst.Set(reflect.New(dst.Type().Elem()))
-		}
-		dst = reflect.Indirect(dst)
-	}
 	switch v := v.(type) {
 	case *ast.Block:
 		return decodeBlock(v, dst, multi)
@@ -155,4 +152,14 @@ func decodeValue(v ast.Value, dst reflect.Value, multi bool) error {
 	default:
 		return fmt.Errorf("not implemented: %T", v)
 	}
+}
+
+func realise(v reflect.Value) reflect.Value {
+	for v.Kind() == reflect.Ptr {
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
+		v = reflect.Indirect(v)
+	}
+	return v
 }
