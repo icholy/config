@@ -13,8 +13,16 @@ func TestUnmarshal(t *testing.T) {
 		B string
 		C bool
 	}
+
 	type Bar struct {
 		Foo *Foo
+	}
+
+	type Baz struct {
+		Int64   int64
+		Uint32  int32
+		Int     int
+		Float32 float32
 	}
 
 	tests := []struct {
@@ -107,6 +115,21 @@ func TestUnmarshal(t *testing.T) {
 					},
 				}
 				return &v
+			},
+		},
+		{
+			name:  "ConvertableTypes",
+			input: "Int64=3\nUint32=234\nInt=44\nFloat32=10.10",
+			dst: func() interface{} {
+				return &Baz{}
+			},
+			want: func() interface{} {
+				return &Baz{
+					Int64:   3,
+					Uint32:  234,
+					Int:     44,
+					Float32: 10.10,
+				}
 			},
 		},
 	}
