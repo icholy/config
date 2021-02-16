@@ -16,12 +16,22 @@ func Unmarshal(data []byte, v interface{}) error {
 	return decodeValue(block, reflect.ValueOf(v))
 }
 
-func groupByName(ee []*ast.Entry) map[string][]*ast.Entry {
+func byName(ee []*ast.Entry) map[string][]*ast.Entry {
 	groups := map[string][]*ast.Entry{}
 	for _, e := range ee {
 		groups[e.Name.Value] = append(groups[e.Name.Value], e)
 	}
 	return groups
+}
+
+func decodeEntry(e *ast.Entry, dst reflect.Value, typ reflect.Type, multi bool) (reflect.Value, error) {
+	if !dst.IsValid() {
+		dst = reflect.New(typ).Elem()
+	}
+	if err := decodeValue(e.Value, dst); err != nil {
+		return reflect.Value{}, err
+	}
+	return dst, nil
 }
 
 func decodeBlock(b *ast.Block, dst reflect.Value) error {
@@ -56,32 +66,35 @@ func decodeBlockToMap(b *ast.Block, dst reflect.Value) error {
 	if dst.IsNil() {
 		dst.Set(reflect.MakeMap(dst.Type()))
 	}
-	for _, e := range b.Entries {
-		key := reflect.ValueOf(e.Name.Value)
-		elem := dst.MapIndex(key)
-		if !elem.IsValid() {
-			elem = reflect.New(dst.Type().Elem()).Elem()
+	for name, entries := range byName(b.Entries) {
+		for _, e := range entries {
+			key := reflect.ValueOf(name)
+			val, err := decodeEntry(e, dst.MapIndex(key), dst.Type().Elem(), len(entries) > 1)
+			if err != nil {
+				return err
+			}
+			dst.SetMapIndex(key, val)
 		}
-		if err := decodeValue(e.Value, elem); err != nil {
-			return err
-		}
-		dst.SetMapIndex(key, elem)
 	}
 	return nil
 }
 
 func decodeBlockToStruct(b *ast.Block, dst reflect.Value) error {
-	typ := dst.Type()
-	for _, e := range b.Entries {
-		field, ok := typ.FieldByName(e.Name.Value)
-		if !ok {
-			return fmt.Errorf("no matching field: %q", e.Name.Value)
-		}
-		if field.Anonymous {
-			return fmt.Errorf("anonymous fields are not supported: %q", e.Name.Value)
-		}
-		if err := decodeValue(e.Value, dst.Field(field.Index[0])); err != nil {
-			return err
+	for name, entries := range byName(b.Entries) {
+		for _, e := range entries {
+			field, ok := dst.Type().FieldByName(name)
+			if !ok {
+				return fmt.Errorf("no matching field: %q", name)
+			}
+			if field.Anonymous {
+				return fmt.Errorf("anonymous fields are not supported: %q", name)
+			}
+			idx := field.Index[0]
+			val, err := decodeEntry(e, dst.Field(idx), field.Type, len(entries) > 1)
+			if err != nil {
+				return err
+			}
+			dst.Field(idx).Set(val)
 		}
 	}
 	return nil
