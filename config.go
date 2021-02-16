@@ -68,6 +68,30 @@ func decodeBlockToStruct(b *ast.Block, dst reflect.Value) error {
 	return nil
 }
 
+func decodeList(l *ast.List, dst reflect.Value) error {
+	switch dst.Kind() {
+	case reflect.Interface:
+		if dst.IsNil() {
+			s := []interface{}{}
+			dst.Set(reflect.ValueOf(s))
+		}
+		return decodeValue(l, dst.Elem())
+	case reflect.Slice:
+		slice := dst.Slice(0, 0)
+		for _, v := range l.Values {
+			elem := reflect.New(slice.Type().Elem()).Elem()
+			if err := decodeValue(v, elem); err != nil {
+				return err
+			}
+			slice = reflect.Append(slice, elem)
+		}
+		dst.Set(slice)
+		return nil
+	default:
+		return fmt.Errorf("cannot decode block to: %v", dst.Type())
+	}
+}
+
 func decodePrimitive(primitive interface{}, dst reflect.Value) error {
 	v := reflect.ValueOf(primitive)
 	if v.Type().ConvertibleTo(dst.Type()) {
@@ -90,6 +114,8 @@ func decodeValue(v ast.Value, dst reflect.Value) error {
 	switch v := v.(type) {
 	case *ast.Block:
 		return decodeBlock(v, dst)
+	case *ast.List:
+		return decodeList(v, dst)
 	case *ast.Number:
 		return decodePrimitive(v.Value, dst)
 	case *ast.String:
