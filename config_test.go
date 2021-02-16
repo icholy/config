@@ -95,18 +95,18 @@ func TestUnmarshal(t *testing.T) {
 			name:  "NestedMap",
 			input: "foo { bar { baz = 123 } }",
 			dst: func() interface{} {
-				var m map[string]interface{}
-				return &m
+				var v interface{}
+				return &v
 			},
 			want: func() interface{} {
-				m := map[string]interface{}{
+				var v interface{} = map[string]interface{}{
 					"foo": map[string]interface{}{
 						"bar": map[string]interface{}{
 							"baz": float64(123),
 						},
 					},
 				}
-				return &m
+				return &v
 			},
 		},
 	}
