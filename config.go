@@ -17,7 +17,14 @@ func Unmarshal(data []byte, v interface{}) error {
 }
 
 func decodeBlock(b *ast.Block, dst reflect.Value) error {
-	return decodeBlockToMap(b, dst)
+	switch dst.Kind() {
+	case reflect.Map:
+		return decodeBlockToMap(b, dst)
+	case reflect.Struct:
+		return decodeBlockToStruct(b, dst)
+	default:
+		return fmt.Errorf("cannot decode block to: %T", dst)
+	}
 }
 
 func decodeBlockToMap(b *ast.Block, dst reflect.Value) error {
@@ -27,6 +34,23 @@ func decodeBlockToMap(b *ast.Block, dst reflect.Value) error {
 			return err
 		}
 		dst.SetMapIndex(reflect.ValueOf(e.Name.Value), elem)
+	}
+	return nil
+}
+
+func decodeBlockToStruct(b *ast.Block, dst reflect.Value) error {
+	typ := dst.Type()
+	for _, e := range b.Entries {
+		field, ok := typ.FieldByName(e.Name.Value)
+		if !ok {
+			return fmt.Errorf("no matching field: %q", e.Name.Value)
+		}
+		if field.Anonymous {
+			return fmt.Errorf("anonymous fields are not supported: %q", e.Name.Value)
+		}
+		if err := decodeValue(e.Value, dst.Field(field.Index[0])); err != nil {
+			return err
+		}
 	}
 	return nil
 }
