@@ -36,11 +36,15 @@ func decodeBlockToMap(b *ast.Block, dst reflect.Value) error {
 		dst.Set(reflect.MakeMap(dst.Type()))
 	}
 	for _, e := range b.Entries {
-		elem := reflect.New(dst.Type().Elem()).Elem()
+		key := reflect.ValueOf(e.Name.Value)
+		elem := dst.MapIndex(key)
+		if !elem.IsValid() {
+			elem = reflect.New(dst.Type().Elem()).Elem()
+		}
 		if err := decodeValue(e.Value, elem); err != nil {
 			return err
 		}
-		dst.SetMapIndex(reflect.ValueOf(e.Name.Value), elem)
+		dst.SetMapIndex(key, elem)
 	}
 	return nil
 }
