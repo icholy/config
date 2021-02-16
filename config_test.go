@@ -80,13 +80,13 @@ func TestUnmarshal(t *testing.T) {
 			input: "exists { A=123 }",
 			dst: func() interface{} {
 				m := map[string]interface{}{
-					"existing": &Foo{B: "test"},
+					"exists": &Foo{B: "test"},
 				}
 				return &m
 			},
 			want: func() interface{} {
 				m := map[string]interface{}{
-					"existing": &Foo{A: 123, B: "test"},
+					"exists": &Foo{A: 123, B: "test"},
 				}
 				return &m
 			},
