@@ -91,6 +91,24 @@ func TestUnmarshal(t *testing.T) {
 				return &m
 			},
 		},
+		{
+			name:  "NestedMap",
+			input: "foo { bar { baz = 123 } }",
+			dst: func() interface{} {
+				var m map[string]interface{}
+				return &m
+			},
+			want: func() interface{} {
+				m := map[string]interface{}{
+					"foo": map[string]interface{}{
+						"bar": map[string]interface{}{
+							"baz": float64(123),
+						},
+					},
+				}
+				return &m
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
