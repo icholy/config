@@ -25,6 +25,10 @@ func TestUnmarshal(t *testing.T) {
 		Float32 float32
 	}
 
+	type List struct {
+		Items []interface{}
+	}
+
 	tests := []struct {
 		name  string
 		input string
@@ -129,6 +133,23 @@ func TestUnmarshal(t *testing.T) {
 					Uint32:  234,
 					Int:     44,
 					Float32: 10.10,
+				}
+			},
+		},
+		{
+			name:  "List",
+			input: "Items=[1,2,3,4]",
+			dst: func() interface{} {
+				return &List{}
+			},
+			want: func() interface{} {
+				return &List{
+					Items: []interface{}{
+						float64(1),
+						float64(2),
+						float64(3),
+						float64(4),
+					},
 				}
 			},
 		},
