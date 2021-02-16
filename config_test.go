@@ -14,7 +14,7 @@ func TestUnmarshal(t *testing.T) {
 		want  func() interface{}
 	}{
 		{
-			input: "a=123\nb=42",
+			input: "a=123\nb=42\nc=\"hello\"",
 			dst: func() interface{} {
 				m := map[string]interface{}{}
 				return &m
@@ -23,6 +23,7 @@ func TestUnmarshal(t *testing.T) {
 				m := map[string]interface{}{
 					"a": float64(123),
 					"b": float64(42),
+					"c": "hello",
 				}
 				return &m
 			},

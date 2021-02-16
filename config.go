@@ -36,6 +36,11 @@ func decodeNumber(n *ast.Number, dst reflect.Value) error {
 	return nil
 }
 
+func decodeString(s *ast.String, dst reflect.Value) error {
+	dst.Set(reflect.ValueOf(s.Value))
+	return nil
+}
+
 func decodeValue(v ast.Value, dst reflect.Value) error {
 	for dst.Kind() == reflect.Ptr {
 		dst = reflect.Indirect(dst)
@@ -45,6 +50,8 @@ func decodeValue(v ast.Value, dst reflect.Value) error {
 		return decodeBlock(v, dst)
 	case *ast.Number:
 		return decodeNumber(v, dst)
+	case *ast.String:
+		return decodeString(v, dst)
 	default:
 		return fmt.Errorf("not implemented: %T", v)
 	}
