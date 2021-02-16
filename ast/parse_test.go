@@ -12,6 +12,10 @@ import (
 	"github.com/icholy/config/token"
 )
 
+func init() {
+	golden.NormalizeCRLFToLF = true
+}
+
 func TestParse(t *testing.T) {
 	tests := []struct {
 		name   string
