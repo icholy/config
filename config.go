@@ -16,6 +16,14 @@ func Unmarshal(data []byte, v interface{}) error {
 	return decodeValue(block, reflect.ValueOf(v))
 }
 
+func groupByName(ee []*ast.Entry) map[string][]*ast.Entry {
+	groups := map[string][]*ast.Entry{}
+	for _, e := range ee {
+		groups[e.Name.Value] = append(groups[e.Name.Value], e)
+	}
+	return groups
+}
+
 func decodeBlock(b *ast.Block, dst reflect.Value) error {
 	switch dst.Kind() {
 	case reflect.Interface:
