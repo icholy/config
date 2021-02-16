@@ -20,10 +20,14 @@ func decodeBlock(b *ast.Block, dst reflect.Value) error {
 	switch dst.Kind() {
 	case reflect.Map:
 		return decodeBlockToMap(b, dst)
+	case reflect.Interface:
+		m := map[string]interface{}{}
+		dst.Set(reflect.ValueOf(m))
+		return decodeBlockToMap(b, dst.Elem())
 	case reflect.Struct:
 		return decodeBlockToStruct(b, dst)
 	default:
-		return fmt.Errorf("cannot decode block to: %v", dst)
+		return fmt.Errorf("cannot decode block to: %v", dst.Type())
 	}
 }
 
