@@ -40,16 +40,20 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 		for name, entries := range byName(b.Entries) {
 			key := reflect.ValueOf(name)
 			val := dst.MapIndex(key)
-			ptr := reflect.New(dst.Type().Elem())
+			// make an addressable copy of val
+			var tmp reflect.Value
 			if val.IsValid() {
-				ptr.Elem().Set(val)
+				tmp = reflect.New(val.Type()).Elem()
+				tmp.Set(val)
+			} else {
+				tmp = reflect.New(dst.Type().Elem()).Elem()
 			}
 			for _, e := range entries {
-				if err := decodeValue(e.Value, ptr.Elem(), len(entries) > 1); err != nil {
+				if err := decodeValue(e.Value, tmp, len(entries) > 1); err != nil {
 					return err
 				}
 			}
-			dst.SetMapIndex(key, ptr.Elem())
+			dst.SetMapIndex(key, tmp)
 		}
 		return nil
 	case reflect.Struct:
