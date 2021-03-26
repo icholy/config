@@ -148,9 +148,10 @@ func realise(v reflect.Value, zero func() reflect.Value) reflect.Value {
 				if zero == nil {
 					return v
 				}
-				v.Set(zero())
+				v = zero()
+			} else {
+				v = v.Elem()
 			}
-			v = v.Elem()
 		default:
 			return v
 		}
