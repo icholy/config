@@ -183,8 +183,8 @@ func TestUnmarshal(t *testing.T) {
 			want: func() interface{} {
 				var v interface{} = map[string]interface{}{
 					"Foo": []map[string]interface{}{
-						{"A": 123},
-						{"A": 321},
+						{"A": float64(123)},
+						{"A": float64(321)},
 					},
 				}
 				return &v
