@@ -25,7 +25,7 @@ func byName(ee []*ast.Entry) map[string][]*ast.Entry {
 }
 
 func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
-	dst = realise(dst, func() reflect.Value {
+	dst, settable := realise(dst, func() reflect.Value {
 		if multi {
 			s := []map[string]interface{}{}
 			return reflect.ValueOf(&s).Elem()
@@ -86,7 +86,7 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 }
 
 func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
-	dst, _ = realise(dst, func() reflect.Value {
+	dst, settable := realise(dst, func() reflect.Value {
 		s := []interface{}{}
 		return reflect.ValueOf(s)
 	})
@@ -97,7 +97,7 @@ func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
 			if err := decodeValue(v, elem, multi); err != nil {
 				return err
 			}
-			dst.Set(reflect.Append(dst, elem))
+			settable.Set(reflect.Append(dst, elem))
 		}
 		return nil
 	default:
@@ -106,7 +106,7 @@ func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
 }
 
 func decodePrimitive(primitive interface{}, dst reflect.Value, multi bool) error {
-	dst, _ = realise(dst, nil)
+	dst, settable := realise(dst, nil)
 	v := reflect.ValueOf(primitive)
 	if v.Type().ConvertibleTo(dst.Type()) {
 		v = v.Convert(dst.Type())
@@ -114,7 +114,7 @@ func decodePrimitive(primitive interface{}, dst reflect.Value, multi bool) error
 	if !v.Type().AssignableTo(dst.Type()) {
 		return fmt.Errorf("cannot assign %v to %v", v.Type(), dst.Type())
 	}
-	dst.Set(v)
+	settable.Set(v)
 	return nil
 }
 
@@ -150,9 +150,6 @@ func realise(v reflect.Value, zero func() reflect.Value) (underlying, settable r
 					return v, v
 				}
 				z := zero()
-				if !z.CanSet() {
-					panic("zero returned unaddressable value")
-				}
 				v.Set(z)
 				return z, settable
 			}

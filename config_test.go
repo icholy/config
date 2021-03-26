@@ -189,7 +189,6 @@ func TestUnmarshal(t *testing.T) {
 				}
 				return &v
 			},
-			skip: true,
 		},
 	}
 	for _, tt := range tests {
