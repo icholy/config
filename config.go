@@ -78,7 +78,7 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 		if err := decodeValue(b, elem, multi); err != nil {
 			return err
 		}
-		dst.Set(reflect.Append(dst, elem))
+		settable.Set(reflect.Append(dst, elem))
 		return nil
 	default:
 		return fmt.Errorf("cannot decode block to: %v", dst.Type())
@@ -86,7 +86,7 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 }
 
 func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
-	dst = realise(dst, func() reflect.Value {
+	dst, _ = realise(dst, func() reflect.Value {
 		s := []interface{}{}
 		return reflect.ValueOf(s)
 	})
@@ -106,7 +106,7 @@ func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
 }
 
 func decodePrimitive(primitive interface{}, dst reflect.Value, multi bool) error {
-	dst = realise(dst, nil)
+	dst, _ = realise(dst, nil)
 	v := reflect.ValueOf(primitive)
 	if v.Type().ConvertibleTo(dst.Type()) {
 		v = v.Convert(dst.Type())
@@ -135,7 +135,7 @@ func decodeValue(v ast.Value, dst reflect.Value, multi bool) error {
 	}
 }
 
-func realise(v reflect.Value, zero func() reflect.Value) reflect.Value {
+func realise(v reflect.Value, zero func() reflect.Value) (underlying, settable reflect.Value) {
 	for {
 		switch v.Kind() {
 		case reflect.Ptr:
@@ -144,15 +144,24 @@ func realise(v reflect.Value, zero func() reflect.Value) reflect.Value {
 			}
 			v = reflect.Indirect(v)
 		case reflect.Interface:
+			settable = v
 			if v.IsNil() {
 				if zero == nil {
-					return v
+					return v, v
 				}
-				v.Set(zero())
+				z := zero()
+				if !z.CanSet() {
+					panic("zero returned unaddressable value")
+				}
+				v.Set(z)
+				return z, settable
 			}
 			v = v.Elem()
 		default:
-			return v
+			if !settable.IsValid() {
+				settable = v
+			}
+			return v, settable
 		}
 	}
 }
