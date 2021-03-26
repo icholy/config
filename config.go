@@ -25,7 +25,13 @@ func byName(ee []*ast.Entry) map[string][]*ast.Entry {
 }
 
 func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
-	dst = realise(dst)
+	dst = realise(dst, func() reflect.Value {
+		if multi {
+			s := []map[string]interface{}{}
+			return reflect.ValueOf(&s).Elem()
+		}
+		return reflect.ValueOf(map[string]interface{}{})
+	})
 	switch dst.Kind() {
 	case reflect.Interface:
 		if dst.IsNil() {
@@ -62,7 +68,6 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 				}
 			}
 			dst.SetMapIndex(key, ptr.Elem())
-
 		}
 		return nil
 	case reflect.Struct:
@@ -95,14 +100,11 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 }
 
 func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
-	dst = realise(dst)
+	dst = realise(dst, func() reflect.Value {
+		s := []interface{}{}
+		return reflect.ValueOf(s)
+	})
 	switch dst.Kind() {
-	case reflect.Interface:
-		if dst.IsNil() {
-			s := []interface{}{}
-			dst.Set(reflect.ValueOf(s))
-		}
-		return decodeValue(l, dst.Elem(), multi)
 	case reflect.Slice:
 		for _, v := range l.Values {
 			elem := reflect.New(dst.Type().Elem()).Elem()
@@ -118,7 +120,7 @@ func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
 }
 
 func decodePrimitive(primitive interface{}, dst reflect.Value, multi bool) error {
-	dst = realise(dst)
+	dst = realise(dst, nil)
 	v := reflect.ValueOf(primitive)
 	if v.Type().ConvertibleTo(dst.Type()) {
 		v = v.Convert(dst.Type())
@@ -147,12 +149,24 @@ func decodeValue(v ast.Value, dst reflect.Value, multi bool) error {
 	}
 }
 
-func realise(v reflect.Value) reflect.Value {
-	for v.Kind() == reflect.Ptr {
-		if v.IsNil() {
-			v.Set(reflect.New(v.Type().Elem()))
+func realise(v reflect.Value, zero func() reflect.Value) reflect.Value {
+	for {
+		switch v.Kind() {
+		case reflect.Ptr:
+			if v.IsNil() {
+				v.Set(reflect.New(v.Type().Elem()))
+			}
+			v = reflect.Indirect(v)
+		case reflect.Interface:
+			if v.IsNil() {
+				if zero == nil {
+					return v
+				}
+				v.Set(zero())
+			}
+			v = v.Elem()
+		default:
+			return v
 		}
-		v = reflect.Indirect(v)
 	}
-	return v
 }
