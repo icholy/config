@@ -27,8 +27,7 @@ func byName(ee []*ast.Entry) map[string][]*ast.Entry {
 func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 	dst, update := realise(dst, func() reflect.Value {
 		if multi {
-			s := []map[string]interface{}{}
-			return reflect.ValueOf(&s).Elem()
+			return reflect.ValueOf([]map[string]interface{}{})
 		}
 		return reflect.ValueOf(map[string]interface{}{})
 	})
