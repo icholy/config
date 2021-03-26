@@ -25,7 +25,7 @@ func byName(ee []*ast.Entry) map[string][]*ast.Entry {
 }
 
 func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
-	dst, settable := realise(dst, func() reflect.Value {
+	dst, update := realise(dst, func() reflect.Value {
 		if multi {
 			s := []map[string]interface{}{}
 			return reflect.ValueOf(&s).Elem()
@@ -78,7 +78,7 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 		if err := decodeValue(b, elem, multi); err != nil {
 			return err
 		}
-		settable.Set(reflect.Append(dst, elem))
+		update(reflect.Append(dst, elem))
 		return nil
 	default:
 		return fmt.Errorf("cannot decode block to: %v", dst.Type())
@@ -86,7 +86,7 @@ func decodeBlock(b *ast.Block, dst reflect.Value, multi bool) error {
 }
 
 func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
-	dst, settable := realise(dst, func() reflect.Value {
+	dst, update := realise(dst, func() reflect.Value {
 		s := []interface{}{}
 		return reflect.ValueOf(s)
 	})
@@ -97,7 +97,7 @@ func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
 			if err := decodeValue(v, elem, multi); err != nil {
 				return err
 			}
-			settable.Set(reflect.Append(dst, elem))
+			update(reflect.Append(dst, elem))
 		}
 		return nil
 	default:
@@ -106,7 +106,7 @@ func decodeList(l *ast.List, dst reflect.Value, multi bool) error {
 }
 
 func decodePrimitive(primitive interface{}, dst reflect.Value, multi bool) error {
-	dst, settable := realise(dst, nil)
+	dst, update := realise(dst, nil)
 	v := reflect.ValueOf(primitive)
 	if v.Type().ConvertibleTo(dst.Type()) {
 		v = v.Convert(dst.Type())
@@ -114,7 +114,7 @@ func decodePrimitive(primitive interface{}, dst reflect.Value, multi bool) error
 	if !v.Type().AssignableTo(dst.Type()) {
 		return fmt.Errorf("cannot assign %v to %v", v.Type(), dst.Type())
 	}
-	settable.Set(v)
+	update(v)
 	return nil
 }
 
@@ -135,7 +135,9 @@ func decodeValue(v ast.Value, dst reflect.Value, multi bool) error {
 	}
 }
 
-func realise(v reflect.Value, zero func() reflect.Value) (underlying, settable reflect.Value) {
+func realise(v reflect.Value, zero func() reflect.Value) (reflect.Value, func(reflect.Value)) {
+	var settable reflect.Value
+LOOP:
 	for {
 		switch v.Kind() {
 		case reflect.Ptr:
@@ -146,19 +148,20 @@ func realise(v reflect.Value, zero func() reflect.Value) (underlying, settable r
 		case reflect.Interface:
 			settable = v
 			if v.IsNil() {
-				if zero == nil {
-					return v, v
+				if zero != nil {
+					z := zero()
+					v.Set(z)
+					v = z
 				}
-				z := zero()
-				v.Set(z)
-				return z, settable
+				break LOOP
 			}
 			v = v.Elem()
 		default:
-			if !settable.IsValid() {
-				settable = v
-			}
-			return v, settable
+			break LOOP
 		}
 	}
+	if !settable.IsValid() {
+		settable = v
+	}
+	return v, func(v reflect.Value) { settable.Set(v) }
 }
