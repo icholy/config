@@ -13,7 +13,7 @@ func Unmarshal(data []byte, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	return decodeValue(block, reflect.ValueOf(v), false)
+	return decodeBlock(block, reflect.ValueOf(v), false)
 }
 
 func byName(ee []*ast.Entry) map[string][]*ast.Entry {
@@ -148,10 +148,9 @@ func realise(v reflect.Value, zero func() reflect.Value) reflect.Value {
 				if zero == nil {
 					return v
 				}
-				v = zero()
-			} else {
-				v = v.Elem()
+				v.Set(zero())
 			}
+			v = v.Elem()
 		default:
 			return v
 		}
