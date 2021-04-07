@@ -203,3 +203,31 @@ func TestUnmarshal(t *testing.T) {
 		})
 	}
 }
+
+func TestError(t *testing.T) {
+	t.SkipNow()
+	tests := []struct {
+		name    string
+		input   string
+		dst     func() interface{}
+		message string
+	}{
+		{
+			name:  "invalid field type",
+			input: "Foo = 123",
+			dst: func() interface{} {
+				var c struct {
+					Foo string
+				}
+				return &c
+			},
+			message: "line 1: cannot assign 123 to Foo, expecting string",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := Unmarshal([]byte(tt.input), tt.dst())
+			assert.Error(t, err, tt.message)
+		})
+	}
+}
